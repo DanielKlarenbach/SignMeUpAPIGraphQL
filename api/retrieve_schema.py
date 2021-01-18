@@ -4,6 +4,7 @@ from graphene_django import DjangoObjectType
 
 from api.models import University, Department, Year, FieldOfStudy, Subject, Student, SubjectGroup, Points, Application, \
     UniversityAdmin, DepartmentAdmin
+from api.permissions import is_logged_in, is_owner, is_objects_department_admin, is_department_admin
 
 
 class UserNode(DjangoObjectType):
@@ -84,41 +85,23 @@ class Query(graphene.ObjectType):
     years_by_department = graphene.Field(YearNode)
     me = graphene.Field(UserNode)
 
+    @is_logged_in(info_index=1)
     def resolve_me(self, info):
         user = info.context.user
-        if user.is_anonymous:
-            raise Exception('Not logged in')
         return user
 
-    def resolve_subject_groups_by_student(root, info, student_id, **kwargs):
-        user = info.context.user
-        if user.is_anonymous:
-            raise Exception('You must be logged to browse through your groups')
-        student = Student.objects.get(user=user, id=student_id)
-        if student is None:
-            raise Exception('You are not authorized to browse through this students groups')
-        return SubjectGroup.objects.filter(student=student)
+    @is_logged_in(info_index=1)
+    @is_owner(model=Student, id_kwarg='student_id')
+    def resolve_subject_groups_by_student(root, info, student_id):
+        return SubjectGroup.objects.filter(student_id=student_id)
 
+    @is_logged_in(info_index=1)
+    @is_objects_department_admin(model=Subject,lookup='field_of_study__year__department', id_kwarg='subject_id')
     def resolve_subject_groups_by_subject(root, info, subject_id, **kwargs):
-        user = info.context.user
-        if user.is_anonymous:
-            raise Exception('You must be logged to browse through subjects group')
-        department_admin = DepartmentAdmin.objects.get(user=user)
-        if department_admin is None:
-            raise Exception(
-                'You are not authorized to browse through this subjects group. You are not a department admin')
-        subject = Subject.objects.get(field_of_study__year__department=department_admin.department, id=subject_id)
-        if subject is None:
-            raise Exception(
-                'You are not authorized to browse through this subjects group. This subject is outside of your department')
-        return SubjectGroup.objects.filter(subject=subject)
+        return SubjectGroup.objects.filter(subject_id=subject_id)
 
+    @is_logged_in(info_index=1)
+    @is_department_admin
     def resolve_years_by_department(root, info, **kwargs):
         user = info.context.user
-        if user.is_anonymous:
-            raise Exception('You must be logged to browse through departments years')
-        department_admin = DepartmentAdmin.objects.get(user=user)
-        if department_admin is None:
-            raise Exception(
-                'You are not authorized to browse through departments years. You are not a department admin')
-        return Year.objects.get(department_admin=department_admin)
+        return Year.objects.get(department_admin=user.department_admin)
