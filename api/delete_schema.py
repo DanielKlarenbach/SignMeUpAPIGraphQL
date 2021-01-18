@@ -15,7 +15,7 @@ class DeleteUniversityAdmin(graphene.Mutation):
     @classmethod
     @is_logged_in
     @is_university_admin
-    def mutate(cls, root, info, id):
+    def mutate(cls, root, info):
         university_admin_user = DepartmentAdmin.objects.get(id=id).user.delete()
         return DeleteDepartmentAdmin(university_admin_user)
 
