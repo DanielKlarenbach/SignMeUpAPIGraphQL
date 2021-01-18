@@ -84,13 +84,13 @@ class Query(graphene.ObjectType):
     years_by_department = graphene.Field(YearNode)
     me = graphene.Field(UserNode)
 
-    def resolve_me(self, root,info):
+    def resolve_me(self, info):
         user = info.context.user
         if user.is_anonymous:
             raise Exception('Not logged in')
         return user
 
-    def resolve_subject_groups_by_student(self,root, info, student_id, **kwargs):
+    def resolve_subject_groups_by_student(root, info, student_id, **kwargs):
         user = info.context.user
         if user.is_anonymous:
             raise Exception('You must be logged to browse through your groups')
