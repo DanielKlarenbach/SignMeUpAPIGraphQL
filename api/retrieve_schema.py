@@ -16,19 +16,19 @@ class UserNode(DjangoObjectType):
 class UniversityAdminNode(DjangoObjectType):
     class Meta:
         model = UniversityAdmin
-        fields = ('id','user', 'university', 'departments', 'department_admins')
+        fields = ('id', 'user', 'university', 'departments', 'department_admins')
 
 
 class DepartmentAdminNode(DjangoObjectType):
     class Meta:
         model = DepartmentAdmin
-        fields = ('id','user', 'department')
+        fields = ('id', 'user', 'department')
 
 
 class UniversityNode(DjangoObjectType):
     class Meta:
         model = University
-        fields = ('id','name',)
+        fields = ('id', 'name',)
 
 
 class DepartmentNode(DjangoObjectType):
@@ -40,43 +40,43 @@ class DepartmentNode(DjangoObjectType):
 class YearNode(DjangoObjectType):
     class Meta:
         model = Year
-        fields = ('id','department', 'start_year', 'fields_of_study')
+        fields = ('id', 'department', 'start_year', 'fields_of_study')
 
 
 class FieldOfStudyNode(DjangoObjectType):
     class Meta:
         model = FieldOfStudy
-        fields = ('id','name', 'subjects', 'students')
+        fields = ('id', 'name', 'subjects', 'students')
 
 
 class SubjectNode(DjangoObjectType):
     class Meta:
         model = Subject
-        fields = ('id','name', 'description', 'lecturer', 'type', 'day', 'start_time', 'end_time')
+        fields = ('id', 'name', 'description', 'lecturer', 'type', 'day', 'start_time', 'end_time')
 
 
 class StudentNode(DjangoObjectType):
     class Meta:
         model = Student
-        fields = ('id','user', 'points', 'applications')
+        fields = ('id', 'user', 'points', 'applications')
 
 
 class SubjectGroupNode(DjangoObjectType):
     class Meta:
         model = SubjectGroup
-        fields = ('id','subject', 'student')
+        fields = ('id', 'subject', 'student')
 
 
 class PointsNode(DjangoObjectType):
     class Meta:
         model = Points
-        fields = ('id','subject', 'points')
+        fields = ('id', 'subject', 'points')
 
 
 class ApplicationNode(DjangoObjectType):
     class Meta:
         model = Application
-        fields = ('id','unwanted_subject', 'wanted_subject', 'priority', 'created_at')
+        fields = ('id', 'unwanted_subject', 'wanted_subject', 'priority', 'created_at')
 
 
 class Query(graphene.ObjectType):
@@ -96,7 +96,7 @@ class Query(graphene.ObjectType):
         return SubjectGroup.objects.filter(student_id=student_id)
 
     @is_logged_in(info_index=1)
-    @is_objects_department_admin(model=Subject,lookup='field_of_study__year__department', id_kwarg='subject_id')
+    @is_objects_department_admin(model=Subject, lookup='field_of_study__year__department', id_kwarg='subject_id')
     def resolve_subject_groups_by_subject(root, info, subject_id, **kwargs):
         return SubjectGroup.objects.filter(subject_id=subject_id)
 

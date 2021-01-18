@@ -7,14 +7,20 @@ from django.db import models
 # Create your models here.
 
 class UniversityAdmin(models.Model):
-    user = models.OneToOneField(User,related_name='university_admin', on_delete=models.CASCADE)
+    user = models.OneToOneField(User,related_name='university_admin', on_delete=models.CASCADE,unique=True)
+
+    class Meta:
+        db_table = 'university_admins'
 
     def __str__(self):
         return f"{self.user}"
 
 class University(models.Model):
-    university_admin = models.OneToOneField(UniversityAdmin, on_delete=models.CASCADE, related_name='university',null=True)
+    university_admin = models.OneToOneField(UniversityAdmin, on_delete=models.CASCADE, related_name='university',null=True,unique=True)
     name = models.CharField(max_length=100, unique=True)
+
+    class Meta:
+        db_table = 'universities'
 
     def __str__(self):
         return f"University: {self.name}"
@@ -24,6 +30,12 @@ class Department(models.Model):
     university_admin = models.ForeignKey(UniversityAdmin, related_name='departments', on_delete=models.CASCADE,null=True)
     name = models.CharField(max_length=50)
 
+    class Meta:
+        db_table = 'departments'
+        constraints = [
+            models.UniqueConstraint(fields=['university', 'university_admin','name'], name='unique_department')
+        ]
+
     def __str__(self):
         return f"{self.university} Department: {self.name}"
 
@@ -32,6 +44,12 @@ class Year(models.Model):
     department = models.ForeignKey(Department,related_name='years', on_delete=models.CASCADE)
     start_year = models.PositiveSmallIntegerField()
 
+    class Meta:
+        db_table = 'years'
+        constraints = [
+            models.UniqueConstraint(fields=['department', 'start_year'], name='unique_year')
+        ]
+
     def __str__(self):
         return f"{self.department} Year: {self.start_year}"
 
@@ -39,6 +57,12 @@ class Year(models.Model):
 class FieldOfStudy(models.Model):
     year = models.ForeignKey(Year, related_name='fields_of_study', on_delete=models.CASCADE)
     name = models.CharField(max_length=50)
+
+    class Meta:
+        db_table = 'fields_of_study'
+        constraints = [
+            models.UniqueConstraint(fields=['year', 'name'], name='unique_field_of_study')
+        ]
 
     def __str__(self):
         return f"{self.year} Field of study: {self.name}"
@@ -76,14 +100,23 @@ class Subject(models.Model):
     start_time = models.TimeField()
     end_time = models.TimeField()
 
+    class Meta:
+        db_table = 'subjects'
+        constraints = [
+            models.UniqueConstraint(fields=['field_of_study', 'name'], name='unique_subject')
+        ]
+
     def __str__(self):
         return f"{self.field_of_study} Subject: {self.name} Day: {self.day} Time: {self.start_time}:{self.end_time}"
 
 
 class DepartmentAdmin(models.Model):
-    user = models.OneToOneField(User, related_name='department_admin',on_delete=models.CASCADE)
+    user = models.OneToOneField(User, related_name='department_admin',on_delete=models.CASCADE,unique=True)
     department = models.ForeignKey(Department, related_name='department_admins',on_delete=models.CASCADE)
     university_admin = models.ForeignKey(UniversityAdmin,related_name='department_admins', on_delete=models.CASCADE)
+
+    class Meta:
+        db_table = 'department_admins'
 
     def __str__(self):
         return f"{self.user} {self.department}"
@@ -94,7 +127,7 @@ class Student(models.Model):
     user = models.ForeignKey(User,related_name='students', on_delete=models.CASCADE)
 
     class Meta:
-        db_table = 'student'
+        db_table = 'students'
         constraints = [
             models.UniqueConstraint(fields=['field_of_study', 'user'], name='unique_student')
         ]
@@ -131,7 +164,7 @@ class Application(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        db_table = 'application'
+        db_table = 'applications'
         constraints = [
             models.UniqueConstraint(fields=['unwanted_subject', 'wanted_subject', 'student'], name='unique_application')
         ]
@@ -150,7 +183,7 @@ class SubjectGroup(models.Model):
     student = models.ForeignKey(Student,related_name='subject_groups', on_delete=models.CASCADE)
 
     class Meta:
-        db_table = 'subject_group'
+        db_table = 'subject_groups'
         constraints = [
             models.UniqueConstraint(fields=['subject', 'student'], name='unique_subject_group')
         ]
