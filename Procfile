@@ -1,1 +1,1 @@
-web: gunicorn SignMeUpAPIGraphQL
+web: gunicorn SignMeUpAPIGraphQL.wsgi
