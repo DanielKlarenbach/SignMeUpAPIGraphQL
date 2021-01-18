@@ -38,8 +38,8 @@ class CreateDepartment(graphene.Mutation):
         name = graphene.String(required=True)
 
     @classmethod
-    @is_logged_in
-    @is_university_admin
+    @is_logged_in()
+    @is_university_admin()
     def mutate(cls, root, info, name):
         user = info.context.user
         department = Department.objects.create(university=user.university_admin.university,
@@ -58,7 +58,7 @@ class CreateDepartmentAdmin(graphene.Mutation):
 
     @classmethod
     @transaction.atomic
-    @is_logged_in
+    @is_logged_in()
     @is_objects_university_admin(Department, id_kwarg='department_id')
     def mutate(cls, root, info, department_id, username, password, email):
         user = info.context.user
@@ -78,8 +78,8 @@ class CreateYear(graphene.Mutation):
         start_year = graphene.Int(required=True)
 
     @classmethod
-    @is_logged_in
-    @is_department_admin
+    @is_logged_in()
+    @is_department_admin()
     def mutate(cls, root, info, start_year):
         user = info.context.user
         department = user.department_admin.department
@@ -95,7 +95,7 @@ class CreateFieldOfStudy(graphene.Mutation):
         name = graphene.String(required=True)
 
     @classmethod
-    @is_logged_in
+    @is_logged_in()
     @is_objects_department_admin(Year, id_kwarg='year_id')
     def mutate(cls, root, info, year_id, name):
         field_of_study = FieldOfStudy.objects.create(name=name, year_id=year_id)
@@ -116,7 +116,7 @@ class CreateSubject(graphene.Mutation):
         end_time = graphene.Time(required=True)
 
     @classmethod
-    @is_logged_in
+    @is_logged_in()
     @is_objects_department_admin(FieldOfStudy, lookup='year__department', id_kwarg='field_of_study_id')
     def mutate(cls, root, info, field_of_study_id, name, description, lecturer, day, type, start_time, end_time):
         subject = Subject.objects.create(field_of_study_id=field_of_study_id, name=name, description=description,
@@ -136,7 +136,7 @@ class CreateStudent(graphene.Mutation):
 
     @classmethod
     @transaction.atomic
-    @is_logged_in
+    @is_logged_in()
     @is_objects_department_admin(FieldOfStudy, lookup='year__department', id_kwarg='field_of_study_id')
     def mutate(cls, root, info, field_of_study_id, username, password, email):
         student_user = get_user_model()(username=username, email=email)
@@ -154,7 +154,7 @@ class CreateSubjectGroup(graphene.Mutation):
         student_id = graphene.Int(required=True)
 
     @classmethod
-    @is_logged_in
+    @is_logged_in()
     @is_objects_department_admin(Student, lookup='field_of_study__year__department', id_kwarg='student_id')
     @is_objects_department_admin(Subject, lookup='field_of_study__year__department', id_kwarg='subject_id')
     def mutate(cls, root, info, subject_id, student_id):
@@ -171,7 +171,7 @@ class CreatePoints(graphene.Mutation):
         points = graphene.Int(required=True)
 
     @classmethod
-    @is_logged_in
+    @is_logged_in()
     @is_owner(model=Subject, lookup='field_of_study__students__user', id_kwarg='subject_id')
     @is_owner(model=Student, id_kwarg='student_id')
     def mutate(cls, root, info, subject_id, student_id, points):
@@ -189,7 +189,7 @@ class CreateApplication(graphene.Mutation):
         priority = graphene.Int(required=True)
 
     @classmethod
-    @is_logged_in
+    @is_logged_in()
     @is_owner(model=Subject, lookup='field_of_study__students__user', id_kwarg='unwanted_subject_id')
     @is_owner(model=Subject, lookup='field_of_study__students__user', id_kwarg='wanted_subject_id')
     @is_owner(model=Student, id_kwarg='student_id')

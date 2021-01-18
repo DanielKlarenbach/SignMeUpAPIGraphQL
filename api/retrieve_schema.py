@@ -101,7 +101,7 @@ class Query(graphene.ObjectType):
         return SubjectGroup.objects.filter(subject_id=subject_id)
 
     @is_logged_in(info_index=1)
-    @is_department_admin
+    @is_department_admin(info_index=1)
     def resolve_years_by_department(root, info, **kwargs):
         user = info.context.user
-        return Year.objects.get(department_admin=user.department_admin)
+        return Year.objects.get(department=user.department_admin.department)
