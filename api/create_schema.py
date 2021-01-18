@@ -7,7 +7,7 @@ from django.db import transaction
 from api.models import UniversityAdmin, University, Department, DepartmentAdmin, Year, FieldOfStudy, Subject, Student, \
     SubjectGroup, Points, Application
 from api.permissions import is_logged_in, is_department_admin, is_university_admin, is_objects_university_admin, \
-    is_objects_department_admin_by_department, is_objects_department_admin_by_department_admin, is_owner
+    is_objects_department_admin, is_objects_department_admin, is_owner
 from api.retrieve_schema import UserNode, UniversityNode, DepartmentNode, UniversityAdminNode, YearNode, \
     FieldOfStudyNode, \
     SubjectNode, StudentNode, SubjectGroupNode, DepartmentAdminNode, PointsNode, ApplicationNode
@@ -96,7 +96,7 @@ class CreateFieldOfStudy(graphene.Mutation):
 
     @classmethod
     @is_logged_in
-    @is_objects_department_admin_by_department(Year, 'department')
+    @is_objects_department_admin(Year, 'department')
     def mutate(cls, root, info,year_id,name):
         year=Year.objects.get(id=year_id)
         field_of_study=FieldOfStudy.objects.create(name=name,year=year)
@@ -118,7 +118,7 @@ class CreateSubject(graphene.Mutation):
 
     @classmethod
     @is_logged_in
-    @is_objects_department_admin_by_department(FieldOfStudy, 'year__department')
+    @is_objects_department_admin(FieldOfStudy, 'year__department')
     def mutate(cls, root, info,fieldofstudy_id,name,description,lecturer,day,type,start_time,end_time):
         subject=Subject.objects.create(field_of_study_id=fieldofstudy_id,name=name,description=description,lecturer=lecturer,day=day,type=type,start_time=start_time,end_time=end_time)
         return CreateSubject(subject)
@@ -136,7 +136,7 @@ class CreateStudent(graphene.Mutation):
     @classmethod
     @transaction.atomic
     @is_logged_in
-    @is_objects_department_admin_by_department(FieldOfStudy, 'year__department')
+    @is_objects_department_admin(FieldOfStudy, 'year__department')
     def mutate(cls, root, info,fieldofstudy_id,username,password,email):
         student_user = get_user_model()(username=username, email=email)
         student_user.set_password(password)
@@ -154,8 +154,8 @@ class CreateSubjectGroup(graphene.Mutation):
 
     @classmethod
     @is_logged_in
-    @is_objects_department_admin_by_department_admin(Student, 'field_of_study__year__department')
-    @is_objects_department_admin_by_department_admin(Subject, 'field_of_study__year__department')
+    @is_objects_department_admin(Student, 'field_of_study__year__department')
+    @is_objects_department_admin(Subject, 'field_of_study__year__department')
     def mutate(cls, root, info,subject_id,student_id):
         subject=Subject.objects.get(id=subject_id)
         student = Student.objects.get(id=student_id)

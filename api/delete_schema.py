@@ -3,26 +3,25 @@ from django.contrib.auth.models import User
 
 from api.models import UniversityAdmin, DepartmentAdmin, Department, Year, FieldOfStudy, Subject, Student, SubjectGroup, \
     Application, Points
-from api.permissions import is_logged_in, is_objects_university_admin, is_objects_department_admin_by_department, \
-    is_owner, is_objects_department_admin_by_department_admin
+from api.permissions import is_logged_in, is_objects_university_admin, is_objects_department_admin, \
+    is_owner, is_objects_department_admin, is_university_admin
+from api.retrieve_schema import UniversityAdminNode, UserNode, DepartmentNode, YearNode, FieldOfStudyNode, SubjectNode, \
+    StudentNode, SubjectGroupNode, ApplicationNode, PointsNode
 
 
 class DeleteUniversityAdmin(graphene.Mutation):
-    success_message = graphene.String()
-
-    class Arguments:
-        id = graphene.Int(required=True)
+    university_admin_user = graphene.Field(UserNode)
 
     @classmethod
     @is_logged_in
-    @is_objects_university_admin(model=UniversityAdmin)
+    @is_university_admin
     def mutate(cls, root, info, id):
-        return DeleteDepartmentAdmin(success_message="Deletion of admin: " + str(
-            DepartmentAdmin.objects.get(id=id).user.delete()) + "successful")
+        university_admin_user = DepartmentAdmin.objects.get(id=id).user.delete()
+        return DeleteDepartmentAdmin(university_admin_user)
 
 
 class DeleteDepartmentAdmin(graphene.Mutation):
-    success_message = graphene.String()
+    department_admin_user = graphene.Field(UserNode)
 
     class Arguments:
         id = graphene.Int(required=True)
@@ -31,12 +30,12 @@ class DeleteDepartmentAdmin(graphene.Mutation):
     @is_logged_in
     @is_objects_university_admin(model=DepartmentAdmin)
     def mutate(cls, root, info, id):
-        return DeleteDepartmentAdmin(success_message="Deletion of department admin: " + str(
-            DepartmentAdmin.objects.get(id=id).user.delete()) + "successful")
+        department_admin_user = DepartmentAdmin.objects.get(id=id).user.delete()
+        return DeleteDepartmentAdmin(department_admin_user)
 
 
 class DeleteDepartment(graphene.Mutation):
-    success_message = graphene.String()
+    department = graphene.Field(DepartmentNode)
 
     class Arguments:
         id = graphene.Int(required=True)
@@ -45,81 +44,83 @@ class DeleteDepartment(graphene.Mutation):
     @is_logged_in
     @is_objects_university_admin(model=Department)
     def mutate(cls, root, info, id):
-        return DeleteDepartment(
-            success_message="Deletion of department: " + str(Department.objects.get(id=id).delete()) + " successful")
+        department = Department.objects.get(id=id).delete()
+        return DeleteDepartment(department)
 
 
 class DeleteYear(graphene.Mutation):
-    success_message = graphene.String()
+    year = graphene.Field(YearNode)
 
     class Arguments:
         id = graphene.Int(required=True)
 
     @classmethod
     @is_logged_in
-    @is_objects_department_admin_by_department_admin(model=Year)
+    @is_objects_department_admin(model=Year)
     def mutate(cls, root, info, id):
-        return DeleteYear(success_message="Deletion of year: " + str(Year.objects.get(id=id).delete()) + " successful")
+        year = Year.objects.get(id=id).delete()
+        return DeleteYear(year)
 
 
 class DeleteFieldOfStudy(graphene.Mutation):
-    success_message = graphene.String()
+    field_of_study = graphene.Field(FieldOfStudyNode)
 
     class Arguments:
         id = graphene.Int(required=True)
 
     @classmethod
     @is_logged_in
-    @is_objects_department_admin_by_department_admin(model=FieldOfStudy)
+    @is_objects_department_admin(model=FieldOfStudy, lookup='year__department')
     def mutate(cls, root, info, id):
-        return DeleteFieldOfStudy(success_message="Deletion of field of study: " + str(
-            FieldOfStudy.objects.get(id=id).delete()) + " successful")
+        field_of_study = FieldOfStudy.objects.get(id=id).delete()
+        return DeleteFieldOfStudy(field_of_study)
 
 
 class DeleteSubject(graphene.Mutation):
-    success_message = graphene.String()
+    subject = graphene.Field(SubjectNode)
 
     class Arguments:
         id = graphene.Int(required=True)
 
     @classmethod
     @is_logged_in
-    @is_objects_department_admin_by_department_admin(model=Subject)
+    @is_objects_department_admin(model=Subject, lookup='field_of_study__year__department')
     def mutate(cls, root, info, id):
-        return DeleteSubject(
-            success_message="Deletion of subject: " + str(Subject.objects.get(id=id).delete()) + " successful")
+        subject = Subject.objects.get(id=id).delete()
+        return DeleteSubject(subject)
 
 
 class DeleteStudent(graphene.Mutation):
-    success_message = graphene.String()
+    student = graphene.Field(StudentNode)
 
     class Arguments:
         id = graphene.Int(required=True)
 
     @classmethod
     @is_logged_in
-    @is_objects_department_admin_by_department_admin(model=Student)
+    @is_objects_department_admin(model=Student, lookup='field_of_study__year__department')
     def mutate(cls, root, info, id):
-        return DeleteStudent(
-            success_message="Deletion of student: " + str(Student.objects.get(id=id).delete()) + " successful")
+        student = Student.objects.get(id=id).delete()
+        return DeleteStudent(student)
 
 
 class DeleteSubjectGroup(graphene.Mutation):
-    success_message = graphene.String()
+    subject_group = graphene.Field(SubjectGroupNode)
 
     class Arguments:
         id = graphene.Int(required=True)
+        student_id = graphene.Int(required=True)
 
     @classmethod
     @is_logged_in
-    @is_objects_department_admin_by_department_admin(model=SubjectGroup)
-    def mutate(cls, root, info, id):
-        return DeleteSubjectGroup(success_message="Deletion of subject group: " + str(
-            SubjectGroup.objects.get(id=id).delete()) + " successful")
+    @is_objects_department_admin(model=Student, lookup='field_of_study__year__department', id_kwarg='student_id')
+    def mutate(cls, root, info, id, student_id):
+        subject_group = SubjectGroup.objects.get(id=id).delete()
+        return DeleteSubjectGroup(subject_group)
 
 
 class DeleteApplication(graphene.Mutation):
-    success_message = graphene.String()
+    application = graphene.Field(ApplicationNode)
 
     class Arguments:
         id = graphene.Int(required=True)
@@ -128,12 +129,12 @@ class DeleteApplication(graphene.Mutation):
     @is_logged_in
     @is_owner(model=Application)
     def mutate(cls, root, info, id):
-        return DeleteApplication(
-            success_message="Deletion of application: " + str(Application.objects.get(id=id).delete()) + " successful")
+        application = Application.objects.get(id=id).delete()
+        return DeleteApplication(application)
 
 
 class DeletePoints(graphene.Mutation):
-    success_message = graphene.String()
+    points = graphene.Field(PointsNode)
 
     class Arguments:
         id = graphene.Int(required=True)
@@ -142,22 +143,8 @@ class DeletePoints(graphene.Mutation):
     @is_logged_in
     @is_owner(model=Points)
     def mutate(cls, root, info, id):
-        return DeletePoints(
-            success_message="Deletion of points: " + str(Points.objects.get(id=id).delete()) + " successful")
-
-
-class DeleteUser(graphene.Mutation):
-    success_message = graphene.String()
-
-    class Arguments:
-        id = graphene.Int(required=True)
-
-    @classmethod
-    @is_logged_in
-    @is_owner(model=User)
-    def mutate(cls, root, info, id):
-        return DeleteUser(
-            success_message="Deletion of user: " + str(User.objects.get(id=id).delete()) + " successful")
+        points = Points.objects.get(id=id).delete()
+        return DeletePoints(points)
 
 
 class Mutation(graphene.ObjectType):

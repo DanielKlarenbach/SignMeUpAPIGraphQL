@@ -3,8 +3,8 @@ from django.contrib.auth.models import User
 
 from api.models import UniversityAdmin, DepartmentAdmin, Department, Year, FieldOfStudy, Subject, Student, SubjectGroup, \
     Application, Points
-from api.permissions import is_logged_in, is_objects_university_admin, is_objects_department_admin_by_department, \
-    is_owner, is_objects_department_admin_by_department_admin
+from api.permissions import is_logged_in, is_objects_university_admin, is_objects_department_admin, \
+    is_owner, is_objects_department_admin
 
 
 class DeleteUniversityAdmin(graphene.Mutation):
@@ -57,7 +57,7 @@ class DeleteYear(graphene.Mutation):
 
     @classmethod
     @is_logged_in
-    @is_objects_department_admin_by_department_admin(model=Year)
+    @is_objects_department_admin(model=Year)
     def mutate(cls, root, info, id):
         return DeleteYear(success_message="Deletion of year: " + str(Year.objects.get(id=id).delete()) + " successful")
 
@@ -70,7 +70,7 @@ class DeleteFieldOfStudy(graphene.Mutation):
 
     @classmethod
     @is_logged_in
-    @is_objects_department_admin_by_department_admin(model=FieldOfStudy)
+    @is_objects_department_admin(model=FieldOfStudy)
     def mutate(cls, root, info, id):
         return DeleteFieldOfStudy(success_message="Deletion of field of study: " + str(
             FieldOfStudy.objects.get(id=id).delete()) + " successful")
@@ -84,7 +84,7 @@ class DeleteSubject(graphene.Mutation):
 
     @classmethod
     @is_logged_in
-    @is_objects_department_admin_by_department_admin(model=Subject)
+    @is_objects_department_admin(model=Subject)
     def mutate(cls, root, info, id):
         return DeleteSubject(
             success_message="Deletion of subject: " + str(Subject.objects.get(id=id).delete()) + " successful")
@@ -98,7 +98,7 @@ class DeleteStudent(graphene.Mutation):
 
     @classmethod
     @is_logged_in
-    @is_objects_department_admin_by_department_admin(model=Student)
+    @is_objects_department_admin(model=Student)
     def mutate(cls, root, info, id):
         return DeleteStudent(
             success_message="Deletion of student: " + str(Student.objects.get(id=id).delete()) + " successful")
@@ -112,7 +112,7 @@ class DeleteSubjectGroup(graphene.Mutation):
 
     @classmethod
     @is_logged_in
-    @is_objects_department_admin_by_department_admin(model=SubjectGroup)
+    @is_objects_department_admin(model=SubjectGroup)
     def mutate(cls, root, info, id):
         return DeleteSubjectGroup(success_message="Deletion of subject group: " + str(
             SubjectGroup.objects.get(id=id).delete()) + " successful")
