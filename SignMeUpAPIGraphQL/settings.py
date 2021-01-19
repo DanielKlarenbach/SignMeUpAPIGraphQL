@@ -85,7 +85,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'SignMeUpGQL',
         'USER': 'postgres',
-        'PASSWORD': 'Klara1374#',
+        'PASSWORD': 'ebee407f18b2bea49dc430d6acfb03c2',
         'HOST': '127.0.0.1',
         'PORT': '5432',
     }
