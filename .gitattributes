@@ -1,0 +1,3 @@
+Procfile merge = ours
+SignMeUpAPIGraphQL merge = ours
+.gitignore merge = ours
