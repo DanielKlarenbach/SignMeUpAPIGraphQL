@@ -16,7 +16,7 @@ graphql-relay==2.0.1
 gunicorn==20.0.4
 idna==2.10
 numpy==1.19.5
-pandas==1.2.0
+pandas==1.1.5
 promise==2.3
 psycopg2==2.8.6
 pycoin==0.90.20201031
