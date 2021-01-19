@@ -25,7 +25,7 @@ SECRET_KEY = 'ns9w@3)0gxu60dr2_d)zw)%qzi^ha#59)@e(1f^i)sgm1&%fy-'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1','0.0.0.0','signmeupgqlapi.herokuapp.com']
+ALLOWED_HOSTS = ['127.0.0.1','signmeupgqlapi.herokuapp.com']
 
 # Application definition
 
@@ -83,10 +83,10 @@ WSGI_APPLICATION = 'SignMeUpAPIGraphQL.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'SignMeUpGQL',
-        'USER': 'postgres',
-        'PASSWORD': 'ebee407f18b2bea49dc430d6acfb03c2',
-        'HOST': '127.0.0.1',
+        'NAME': 'd63lb34s0lfe8u',
+        'USER': 'untwamayilynfg',
+        'PASSWORD': '6d9cdfdbc1296bb8488e8294e4c86288ed61b0c65bb897e7dcb49224c403499a',
+        'HOST': 'ec2-174-129-199-54.compute-1.amazonaws.com',
         'PORT': '5432',
     }
 }
@@ -129,6 +129,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT =os.path.join(BASE_DIR,'staticfiles')
 
 GRAPHENE = {
     'SCHEMA': 'SignMeUpAPIGraphQL.schema.schema',
@@ -140,4 +141,10 @@ GRAPHENE = {
 AUTHENTICATION_BACKENDS = [
     'graphql_jwt.backends.JSONWebTokenBackend',
     'django.contrib.auth.backends.ModelBackend',
+]
+
+CORS_ALLOWED_ORIGINS = [
+'http://46.205.192.92:4200',
+'http://192.168.1.11:4200',
+'http://localhost:4200'
 ]
