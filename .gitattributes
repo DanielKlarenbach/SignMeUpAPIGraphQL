@@ -1,0 +1,2 @@
+Procfile merge=ours
+.gitignore merge=ours
