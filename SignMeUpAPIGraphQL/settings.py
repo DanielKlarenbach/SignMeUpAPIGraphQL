@@ -83,10 +83,10 @@ WSGI_APPLICATION = 'SignMeUpAPIGraphQL.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'd63lb34s0lfe8u',
-        'USER': 'untwamayilynfg',
-        'PASSWORD': '6d9cdfdbc1296bb8488e8294e4c86288ed61b0c65bb897e7dcb49224c403499a',
-        'HOST': 'ec2-174-129-199-54.compute-1.amazonaws.com',
+        'NAME': 'SignMeUpGQL',
+        'USER': 'postgres',
+        'PASSWORD': 'Klara1374#',
+        'HOST': '127.0.0.1',
         'PORT': '5432',
     }
 }
@@ -141,10 +141,4 @@ GRAPHENE = {
 AUTHENTICATION_BACKENDS = [
     'graphql_jwt.backends.JSONWebTokenBackend',
     'django.contrib.auth.backends.ModelBackend',
-]
-
-CORS_ALLOWED_ORIGINS = [
-'http://46.205.192.92:4200',
-'http://192.168.1.11:4200',
-'http://localhost:4200'
 ]
