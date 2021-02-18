@@ -1,10 +1,12 @@
-from django.db import models
 from django.conf import settings
+from django.db import models
+
 
 # Create your models here.
 
 class UniversityAdmin(models.Model):
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, related_name='university_admin', on_delete=models.CASCADE, unique=True)
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, related_name='university_admin', on_delete=models.CASCADE,
+                                unique=True)
 
     class Meta:
         db_table = 'university_admins'
@@ -110,7 +112,8 @@ class Subject(models.Model):
 
 
 class DepartmentAdmin(models.Model):
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, related_name='department_admin', on_delete=models.CASCADE, unique=True)
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, related_name='department_admin', on_delete=models.CASCADE,
+                                unique=True)
     department = models.ForeignKey(Department, related_name='department_admins', on_delete=models.CASCADE)
 
     class Meta:
