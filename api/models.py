@@ -1,5 +1,3 @@
-from urllib import response
-
 from django.contrib.auth.models import AbstractUser, User
 from django.db import models
 
@@ -7,7 +5,7 @@ from django.db import models
 # Create your models here.
 
 class UniversityAdmin(models.Model):
-    user = models.OneToOneField(User,related_name='university_admin', on_delete=models.CASCADE,unique=True)
+    user = models.OneToOneField(User, related_name='university_admin', on_delete=models.CASCADE, unique=True)
 
     class Meta:
         db_table = 'university_admins'
@@ -15,8 +13,10 @@ class UniversityAdmin(models.Model):
     def __str__(self):
         return f"{self.user}"
 
+
 class University(models.Model):
-    university_admin = models.OneToOneField(UniversityAdmin, on_delete=models.CASCADE, related_name='university',null=True,unique=True)
+    university_admin = models.OneToOneField(UniversityAdmin, on_delete=models.CASCADE, related_name='university',
+                                            null=True, unique=True)
     name = models.CharField(max_length=100, unique=True)
 
     class Meta:
@@ -25,15 +25,15 @@ class University(models.Model):
     def __str__(self):
         return f"University: {self.name}"
 
+
 class Department(models.Model):
-    university = models.ForeignKey(University, related_name='departments', on_delete=models.CASCADE,null=True)
-    university_admin = models.ForeignKey(UniversityAdmin, related_name='departments', on_delete=models.CASCADE,null=True)
+    university = models.ForeignKey(University, related_name='departments', on_delete=models.CASCADE, null=True)
     name = models.CharField(max_length=50)
 
     class Meta:
         db_table = 'departments'
         constraints = [
-            models.UniqueConstraint(fields=['university', 'university_admin','name'], name='unique_department')
+            models.UniqueConstraint(fields=['university', 'name'], name='unique_department')
         ]
 
     def __str__(self):
@@ -41,7 +41,7 @@ class Department(models.Model):
 
 
 class Year(models.Model):
-    department = models.ForeignKey(Department,related_name='years', on_delete=models.CASCADE)
+    department = models.ForeignKey(Department, related_name='years', on_delete=models.CASCADE)
     start_year = models.PositiveSmallIntegerField()
 
     class Meta:
@@ -90,13 +90,13 @@ class Subject(models.Model):
         (SUNDAY, 'Sunday')
     ]
     day = models.CharField(max_length=15, choices=DAY_CHOICES)
-    LECTURE="L"
-    PRACTICE="P"
-    TYPE_CHOICES=[
-        (LECTURE,'Lecture'),
-        (PRACTICE,'Practice')
+    LECTURE = "L"
+    PRACTICE = "P"
+    TYPE_CHOICES = [
+        (LECTURE, 'Lecture'),
+        (PRACTICE, 'Practice')
     ]
-    type = models.CharField(max_length=1,choices=TYPE_CHOICES)
+    type = models.CharField(max_length=1, choices=TYPE_CHOICES)
     start_time = models.TimeField()
     end_time = models.TimeField()
 
@@ -111,9 +111,8 @@ class Subject(models.Model):
 
 
 class DepartmentAdmin(models.Model):
-    user = models.OneToOneField(User, related_name='department_admin',on_delete=models.CASCADE,unique=True)
-    department = models.ForeignKey(Department, related_name='department_admins',on_delete=models.CASCADE)
-    university_admin = models.ForeignKey(UniversityAdmin,related_name='department_admins', on_delete=models.CASCADE)
+    user = models.OneToOneField(User, related_name='department_admin', on_delete=models.CASCADE, unique=True)
+    department = models.ForeignKey(Department, related_name='department_admins', on_delete=models.CASCADE)
 
     class Meta:
         db_table = 'department_admins'
@@ -123,8 +122,8 @@ class DepartmentAdmin(models.Model):
 
 
 class Student(models.Model):
-    field_of_study = models.ForeignKey(FieldOfStudy,related_name='students', on_delete=models.CASCADE)
-    user = models.ForeignKey(User,related_name='students', on_delete=models.CASCADE)
+    field_of_study = models.ForeignKey(FieldOfStudy, related_name='students', on_delete=models.CASCADE)
+    user = models.ForeignKey(User, related_name='students', on_delete=models.CASCADE)
 
     class Meta:
         db_table = 'students'
@@ -137,8 +136,8 @@ class Student(models.Model):
 
 
 class Points(models.Model):
-    subject = models.ForeignKey(Subject, related_name='points',on_delete=models.CASCADE)
-    student = models.ForeignKey(Student,related_name='points', on_delete=models.CASCADE)
+    subject = models.ForeignKey(Subject, related_name='points', on_delete=models.CASCADE)
+    student = models.ForeignKey(Student, related_name='points', on_delete=models.CASCADE)
     points = models.PositiveSmallIntegerField()
 
     class Meta:
@@ -159,7 +158,7 @@ class Points(models.Model):
 class Application(models.Model):
     unwanted_subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name="unwanted_applications")
     wanted_subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name="wanted_applications")
-    student = models.ForeignKey(Student,related_name='applications', on_delete=models.CASCADE)
+    student = models.ForeignKey(Student, related_name='applications', on_delete=models.CASCADE)
     priority = models.PositiveSmallIntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -180,7 +179,7 @@ class Application(models.Model):
 
 class SubjectGroup(models.Model):
     subject = models.ForeignKey(Subject, related_name='subject_groups', on_delete=models.CASCADE)
-    student = models.ForeignKey(Student,related_name='subject_groups', on_delete=models.CASCADE)
+    student = models.ForeignKey(Student, related_name='subject_groups', on_delete=models.CASCADE)
 
     class Meta:
         db_table = 'subject_groups'
@@ -195,5 +194,3 @@ class SubjectGroup(models.Model):
 
     def __str__(self):
         return f"{self.subject} {self.student}"
-
-
