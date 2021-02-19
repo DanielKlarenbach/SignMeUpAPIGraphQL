@@ -4,7 +4,7 @@ from graphene_django import DjangoObjectType
 
 from api.models import University, Department, Year, FieldOfStudy, Subject, Student, SubjectGroup, Points, Application, \
     UniversityAdmin, DepartmentAdmin
-from api.permissions import is_logged_in, is_objects_university_admin, is_department_admin
+from api.permissions import is_logged_in, is_objects_university_admin, is_department_admin, is_university_admin
 
 
 class SubjectGroupNode(DjangoObjectType):
@@ -37,17 +37,17 @@ class SubjectNode(DjangoObjectType):
     @is_logged_in(info_index=1)
     @is_department_admin(info_index=1)
     def resolve_subject_groups(self, info):
-        return SubjectGroup.objects.get(subject=self)
+        return SubjectGroup.objects.filter(subject=self)
 
     @is_logged_in(info_index=1)
     @is_department_admin(info_index=1)
     def resolve_points(self, info):
-        return Points.objects.get(subject=self)
+        return Points.objects.filter(subject=self)
 
     @is_logged_in(info_index=1)
     @is_department_admin(info_index=1)
     def resolve_applications(self, info):
-        return Application.objects.get(subject=self)
+        return Application.objects.filter(subject=self)
 
 
 class StudentNode(DjangoObjectType):
@@ -66,7 +66,7 @@ class FieldOfStudyNode(DjangoObjectType):
     @is_logged_in(info_index=1)
     @is_department_admin(info_index=1)
     def resolve_students(self, info):
-        return Student.objects.get(field_of_study=self)
+        return Student.objects.filter(field_of_study=self)
 
 
 class YearNode(DjangoObjectType):
@@ -80,12 +80,12 @@ class YearNode(DjangoObjectType):
     @is_logged_in(info_index=1)
     @is_department_admin(info_index=1)
     def resolve_fields_of_study(self, info):
-        return FieldOfStudy.objects.get(year=self)
+        return FieldOfStudy.objects.filter(year=self)
 
     @is_logged_in(info_index=1)
     @is_department_admin(info_index=1)
     def resolve_students(self, info):
-        return Student.objects.get(field_of_study__year=self)
+        return Student.objects.filter(field_of_study__year=self)
 
 
 class DepartmentNode(DjangoObjectType):
@@ -99,12 +99,12 @@ class DepartmentNode(DjangoObjectType):
     @is_logged_in(info_index=1)
     @is_department_admin(info_index=1)
     def resolve_years(self, info):
-        return Year.objects.get(department=self)
+        return Year.objects.filter(department=self)
 
     @is_logged_in(info_index=1)
     @is_department_admin(info_index=1)
     def resolve_students(self, info):
-        return Student.objects.get(field_of_study__year__department=self)
+        return Student.objects.filter(field_of_study__year__department=self)
 
 
 class DepartmentAdminNode(DjangoObjectType):
@@ -122,14 +122,15 @@ class UniversityNode(DjangoObjectType):
     department_admins = graphene.List(DepartmentAdminNode)
 
     @is_logged_in(info_index=1)
-    @is_objects_university_admin(model=University, info_index=1)
+    @is_university_admin(info_index=1)
     def resolve_departments(self, info):
-        return Department.objects.get(university=self)
+        print(Department.objects.filter(university=self))
+        return Department.objects.filter(university=self)
 
     @is_logged_in(info_index=1)
-    @is_objects_university_admin(model=University, info_index=1)
+    @is_university_admin(info_index=1)
     def resolve_department_admins(self, info):
-        return DepartmentAdmin.objects.get(department__university=self)
+        return DepartmentAdmin.objects.filter(department__university=self)
 
 
 class UniversityAdminNode(DjangoObjectType):

@@ -47,7 +47,7 @@ def is_department_admin(info_index=2):
     return decorator
 
 
-def is_objects_university_admin(model, lookup='university_admin', id_kwarg='id', info_index=2):
+def is_objects_university_admin(model, lookup='university__university_admin', id_kwarg='id', info_index=2):
     def decorator(func):
         def wrapper(*args, **kwargs):
             info = args[info_index]

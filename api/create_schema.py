@@ -5,8 +5,8 @@ from django.db import transaction
 from api.models import UniversityAdmin, University, Department, DepartmentAdmin, Year, FieldOfStudy, Subject, Student, \
     SubjectGroup, Points, Application
 from api.permissions import is_logged_in, is_department_admin, is_university_admin, is_objects_university_admin, \
-    is_objects_department_admin, is_objects_department_admin, is_owner
-from api.retrieve_schema import UserNode, UniversityNode, DepartmentNode, UniversityAdminNode, YearNode, \
+    is_objects_department_admin, is_owner
+from api.retrieve_schema import DepartmentNode, UniversityAdminNode, YearNode, \
     FieldOfStudyNode, \
     SubjectNode, StudentNode, SubjectGroupNode, DepartmentAdminNode, PointsNode, ApplicationNode
 
@@ -42,8 +42,7 @@ class CreateDepartment(graphene.Mutation):
     @is_university_admin()
     def mutate(cls, root, info, name):
         user = info.context.user
-        department = Department.objects.create(university=user.university_admin.university,
-                                               university_admin=user.university_admin, name=name)
+        department = Department.objects.create(university=user.university_admin.university, name=name)
         return CreateDepartment(department)
 
 
@@ -66,7 +65,6 @@ class CreateDepartmentAdmin(graphene.Mutation):
         department_admin_user.set_password(password)
         department_admin_user.save()
         department_admin = DepartmentAdmin.objects.create(user=department_admin_user,
-                                                          university_admin=user.university_admin,
                                                           department_id=department_id)
         return CreateDepartmentAdmin(department_admin)
 
@@ -158,7 +156,7 @@ class CreateSubjectGroup(graphene.Mutation):
     @is_objects_department_admin(Student, lookup='field_of_study__year__department', id_kwarg='student_id')
     @is_objects_department_admin(Subject, lookup='field_of_study__year__department', id_kwarg='subject_id')
     def mutate(cls, root, info, subject_id, student_id):
-        subject_group = SubjectGroup.objects.creeate(subject_id=subject_id, student_id=student_id)
+        subject_group = SubjectGroup.objects.create(subject_id=subject_id, student_id=student_id)
         return CreateSubjectGroup(subject_group)
 
 
@@ -208,5 +206,6 @@ class Mutation(graphene.ObjectType):
     create_field_of_study = CreateFieldOfStudy.Field()
     create_student = CreateStudent.Field()
     create_subject = CreateSubject.Field()
+    create_points = CreatePoints.Field()
     create_subject_group = CreateSubjectGroup.Field()
     create_application = CreateApplication.Field()
