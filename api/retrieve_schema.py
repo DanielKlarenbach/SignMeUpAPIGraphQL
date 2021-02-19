@@ -4,7 +4,7 @@ from graphene_django import DjangoObjectType
 
 from api.models import University, Department, Year, FieldOfStudy, Subject, Student, SubjectGroup, Points, Application, \
     UniversityAdmin, DepartmentAdmin
-from api.permissions import is_logged_in, is_objects_university_admin, is_department_admin, is_university_admin
+from api.permissions import is_logged_in, is_department_admin, is_university_admin
 
 
 class SubjectGroupNode(DjangoObjectType):
@@ -59,7 +59,7 @@ class StudentNode(DjangoObjectType):
 class FieldOfStudyNode(DjangoObjectType):
     class Meta:
         model = FieldOfStudy
-        fields = ('id', 'name', 'subjects')
+        fields = ('id', 'name', 'year', 'subjects')
 
     students = graphene.List(StudentNode)
 
