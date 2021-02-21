@@ -1,11 +1,10 @@
 import graphene
-from django.contrib.auth.models import User
 
-from api.models import UniversityAdmin, DepartmentAdmin, Department, Year, FieldOfStudy, Subject, Student, SubjectGroup, \
+from api.models import DepartmentAdmin, Department, Year, FieldOfStudy, Subject, Student, SubjectGroup, \
     Application, Points
-from api.permissions import is_logged_in, is_objects_university_admin, is_objects_department_admin, \
-    is_owner, is_objects_department_admin, is_university_admin
-from api.retrieve_schema import UniversityAdminNode, UserNode, DepartmentNode, YearNode, FieldOfStudyNode, SubjectNode, \
+from api.permissions import is_logged_in, is_objects_university_admin, is_owner, is_objects_department_admin, \
+    is_university_admin
+from api.retrieve_schema import UserNode, DepartmentNode, YearNode, FieldOfStudyNode, SubjectNode, \
     StudentNode, SubjectGroupNode, ApplicationNode, PointsNode
 
 
@@ -16,7 +15,8 @@ class DeleteUniversityAdmin(graphene.Mutation):
     @is_logged_in()
     @is_university_admin()
     def mutate(cls, root, info):
-        university_admin_user = DepartmentAdmin.objects.get(id=id).user.delete()
+        university_admin_user = info.context.user
+        university_admin_user.delete()
         return DeleteDepartmentAdmin(university_admin_user)
 
 
