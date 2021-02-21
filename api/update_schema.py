@@ -1,173 +1,172 @@
 import graphene
-from django.contrib.auth.models import User
+from django.db import transaction
 
-from api.models import UniversityAdmin, DepartmentAdmin, Department, Year, FieldOfStudy, Subject, Student, SubjectGroup, \
-    Application, Points
-from api.permissions import is_logged_in, is_objects_university_admin, is_objects_department_admin, \
-    is_owner, is_objects_department_admin
+from api.models import Department, Year, FieldOfStudy, Subject, Points, Application, University
+from api.permissions import is_logged_in, is_objects_university_admin, \
+    is_objects_department_admin, is_owner, is_university_admin
+from api.retrieve_schema import DepartmentNode, YearNode, \
+    FieldOfStudyNode, \
+    SubjectNode, PointsNode, ApplicationNode, UserNode, \
+    UniversityNode
 
 
-class DeleteUniversityAdmin(graphene.Mutation):
-    success_message = graphene.String()
+class UpdateUser(graphene.Mutation):
+    user = graphene.Field(UserNode)
+
+    class Arguments:
+        username = graphene.String(required=False)
+        password = graphene.String(required=False)
+        email = graphene.String(required=False)
+
+    @classmethod
+    @transaction.atomic
+    def mutate(cls, root, info, **kwargs):
+        user = info.context.user
+        for k, v in kwargs.items():
+            user.k = v
+        user.save()
+        return UpdateUser(user=user)
+
+
+class UpdateUniversity(graphene.Mutation):
+    university = graphene.Field(UniversityNode)
+
+    class Arguments:
+        name = graphene.String(required=True)
+
+    @classmethod
+    @transaction.atomic()
+    @is_logged_in()
+    @is_university_admin
+    def mutate(cls, root, info, name):
+        university_admin_user = info.context.user
+        university = University.objects.get(university_admin__user=university_admin_user)
+        university.name = name
+        university.save()
+        return UpdateUniversity(university)
+
+
+class UpdateDepartment(graphene.Mutation):
+    department = graphene.Field(DepartmentNode)
 
     class Arguments:
         id = graphene.Int(required=True)
+        name = graphene.String(required=True)
 
     @classmethod
-    @is_logged_in
-    @is_objects_university_admin(model=UniversityAdmin)
-    def mutate(cls, root, info, id):
-        return DeleteDepartmentAdmin(success_message="Deletion of admin: " + str(
-            DepartmentAdmin.objects.get(id=id).user.delete()) + "successful")
-
-
-class DeleteDepartmentAdmin(graphene.Mutation):
-    success_message = graphene.String()
-
-    class Arguments:
-        id = graphene.Int(required=True)
-
-    @classmethod
-    @is_logged_in
-    @is_objects_university_admin(model=DepartmentAdmin)
-    def mutate(cls, root, info, id):
-        return DeleteDepartmentAdmin(success_message="Deletion of department admin: " + str(
-            DepartmentAdmin.objects.get(id=id).user.delete()) + "successful")
-
-
-class DeleteDepartment(graphene.Mutation):
-    success_message = graphene.String()
-
-    class Arguments:
-        id = graphene.Int(required=True)
-
-    @classmethod
-    @is_logged_in
+    @transaction.atomic()
+    @is_logged_in()
     @is_objects_university_admin(model=Department)
-    def mutate(cls, root, info, id):
-        return DeleteDepartment(
-            success_message="Deletion of department: " + str(Department.objects.get(id=id).delete()) + " successful")
+    def mutate(cls, root, info, id, name):
+        department = Department.objects.get(id=id)
+        department.name = name
+        department.save()
+        return UpdateDepartment(department)
 
 
-class DeleteYear(graphene.Mutation):
-    success_message = graphene.String()
+class UpdateYear(graphene.Mutation):
+    year = graphene.Field(YearNode)
 
     class Arguments:
         id = graphene.Int(required=True)
+        start_year = graphene.Int(required=True)
 
     @classmethod
-    @is_logged_in
+    @transaction.atomic()
+    @is_logged_in()
     @is_objects_department_admin(model=Year)
-    def mutate(cls, root, info, id):
-        return DeleteYear(success_message="Deletion of year: " + str(Year.objects.get(id=id).delete()) + " successful")
+    def mutate(cls, root, info, id, start_year):
+        year = Year.objects.get(id=id)
+        year.start_year = start_year
+        year.save()
+        return UpdateYear(year)
 
 
-class DeleteFieldOfStudy(graphene.Mutation):
-    success_message = graphene.String()
-
-    class Arguments:
-        id = graphene.Int(required=True)
-
-    @classmethod
-    @is_logged_in
-    @is_objects_department_admin(model=FieldOfStudy)
-    def mutate(cls, root, info, id):
-        return DeleteFieldOfStudy(success_message="Deletion of field of study: " + str(
-            FieldOfStudy.objects.get(id=id).delete()) + " successful")
-
-
-class DeleteSubject(graphene.Mutation):
-    success_message = graphene.String()
+class UpdateFieldOfStudy(graphene.Mutation):
+    field_of_study = graphene.Field(FieldOfStudyNode)
 
     class Arguments:
         id = graphene.Int(required=True)
+        name = graphene.String(required=True)
 
     @classmethod
-    @is_logged_in
-    @is_objects_department_admin(model=Subject)
-    def mutate(cls, root, info, id):
-        return DeleteSubject(
-            success_message="Deletion of subject: " + str(Subject.objects.get(id=id).delete()) + " successful")
+    @transaction.atomic()
+    @is_logged_in()
+    @is_objects_department_admin(model=FieldOfStudy, lookup='year__department')
+    def mutate(cls, root, info, id, name):
+        field_of_study = FieldOfStudy.objects.get(id=id)
+        field_of_study.name = name
+        field_of_study.save()
+        return UpdateFieldOfStudy(field_of_study)
 
 
-class DeleteStudent(graphene.Mutation):
-    success_message = graphene.String()
+class UpdateSubject(graphene.Mutation):
+    subject = graphene.Field(SubjectNode)
 
     class Arguments:
         id = graphene.Int(required=True)
+        name = graphene.String(required=False)
+        description = graphene.String(required=False)
+        lecturer = graphene.String(required=False)
+        day = graphene.String(required=False)
+        type = graphene.String(required=False)
+        start_time = graphene.Time(required=False)
+        end_time = graphene.Time(required=False)
 
     @classmethod
-    @is_logged_in
-    @is_objects_department_admin(model=Student)
-    def mutate(cls, root, info, id):
-        return DeleteStudent(
-            success_message="Deletion of student: " + str(Student.objects.get(id=id).delete()) + " successful")
+    @transaction.atomic()
+    @is_logged_in()
+    @is_objects_department_admin(Subject, lookup='field_of_study__year__department')
+    def mutate(cls, root, info, id, **kwargs):
+        subject = Subject.objects.get(id=id)
+        for k, v in kwargs.items():
+            subject.k = v
+        subject.save()
+        return UpdateSubject(subject)
 
 
-class DeleteSubjectGroup(graphene.Mutation):
-    success_message = graphene.String()
+class UpdatePoints(graphene.Mutation):
+    points = graphene.Field(PointsNode)
 
     class Arguments:
         id = graphene.Int(required=True)
+        points = graphene.String(required=True)
 
     @classmethod
-    @is_logged_in
-    @is_objects_department_admin(model=SubjectGroup)
-    def mutate(cls, root, info, id):
-        return DeleteSubjectGroup(success_message="Deletion of subject group: " + str(
-            SubjectGroup.objects.get(id=id).delete()) + " successful")
-
-
-class DeleteApplication(graphene.Mutation):
-    success_message = graphene.String()
-
-    class Arguments:
-        id = graphene.Int(required=True)
-
-    @classmethod
-    @is_logged_in
-    @is_owner(model=Application)
-    def mutate(cls, root, info, id):
-        return DeleteApplication(
-            success_message="Deletion of application: " + str(Application.objects.get(id=id).delete()) + " successful")
-
-
-class DeletePoints(graphene.Mutation):
-    success_message = graphene.String()
-
-    class Arguments:
-        id = graphene.Int(required=True)
-
-    @classmethod
-    @is_logged_in
+    @transaction.atomic()
+    @is_logged_in()
     @is_owner(model=Points)
-    def mutate(cls, root, info, id):
-        return DeletePoints(
-            success_message="Deletion of points: " + str(Points.objects.get(id=id).delete()) + " successful")
+    def mutate(cls, root, info, id, points):
+        subject_points = Points.objects.get(id=id)
+        subject_points.points = points
+        subject_points.save()
+        return UpdatePoints(points)
 
 
-class DeleteUser(graphene.Mutation):
-    success_message = graphene.String()
+class UpdateApplication(graphene.Mutation):
+    application = graphene.Field(ApplicationNode)
 
     class Arguments:
         id = graphene.Int(required=True)
+        priority = graphene.Int(required=True)
 
     @classmethod
-    @is_logged_in
-    @is_owner(model=User)
-    def mutate(cls, root, info, id):
-        return DeleteUser(
-            success_message="Deletion of user: " + str(User.objects.get(id=id).delete()) + " successful")
+    @transaction.atomic()
+    @is_logged_in()
+    @is_owner(model=Application)
+    def mutate(cls, root, info, id, priority):
+        application = Application.objects.get(id=id)
+        application.priority = priority
+        application.save()
+        return UpdatePoints(priority)
 
 
 class Mutation(graphene.ObjectType):
-    delete_university_admin = DeleteUniversityAdmin.Field()
-    delete_department_admin = DeleteDepartmentAdmin.Field()
-    delete_department = DeleteDepartment.Field()
-    delete_year = DeleteYear.Field()
-    delete_field_of_study = DeleteFieldOfStudy.Field()
-    delete_subject = DeleteSubject.Field()
-    delete_student = DeleteStudent.Field()
-    delete_subject_group = DeleteSubjectGroup.Field()
-    delete_points = DeletePoints.Field()
-    delete_application = DeleteApplication.Field()
+    update_user = UpdateUser.Field()
+    update_university = UpdateUniversity.Field()
+    update_department = UpdateDepartment.Field()
+    update_year = UpdateYear.Field()
+    update_field_of_study = UpdateFieldOfStudy.Field()
+    update_subject = UpdateSubject.Field()
+    update_points = UpdatePoints.Field()
+    update_application = UpdateApplication
