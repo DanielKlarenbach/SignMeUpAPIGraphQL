@@ -28,7 +28,8 @@ class ApplicationNode(DjangoObjectType):
 class SubjectNode(DjangoObjectType):
     class Meta:
         model = Subject
-        fields = ('id', 'name', 'description', 'lecturer', 'type', 'day', 'start_time', 'end_time', 'field_of_study')
+        fields = (
+        'id', 'name', 'description', 'lecturer', 'type', 'day', 'start_time', 'end_time', 'limit', 'field_of_study')
 
     subject_groups = graphene.List(SubjectGroupNode)
     points = graphene.List(PointsNode)

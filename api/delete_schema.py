@@ -4,24 +4,24 @@ from api.models import DepartmentAdmin, Department, Year, FieldOfStudy, Subject,
     Application, Points
 from api.permissions import is_logged_in, is_objects_university_admin, is_owner, is_objects_department_admin, \
     is_university_admin
-from api.retrieve_schema import UserNode, DepartmentNode, YearNode, FieldOfStudyNode, SubjectNode, \
-    StudentNode, SubjectGroupNode, ApplicationNode, PointsNode
+from api.retrieve_schema import DepartmentNode, YearNode, FieldOfStudyNode, SubjectNode, \
+    StudentNode, SubjectGroupNode, ApplicationNode, PointsNode, UniversityAdminNode, DepartmentAdminNode
 
 
 class DeleteUniversityAdmin(graphene.Mutation):
-    university_admin_user = graphene.Field(UserNode)
+    university_admin = graphene.Field(UniversityAdminNode)
 
     @classmethod
     @is_logged_in()
     @is_university_admin()
     def mutate(cls, root, info):
         university_admin_user = info.context.user
-        university_admin_user.delete()
-        return DeleteDepartmentAdmin(university_admin_user)
+        university_admin = university_admin_user.delete()
+        return DeleteDepartmentAdmin(university_admin)
 
 
 class DeleteDepartmentAdmin(graphene.Mutation):
-    department_admin_user = graphene.Field(UserNode)
+    department_admin = graphene.Field(DepartmentAdminNode)
 
     class Arguments:
         id = graphene.Int(required=True)
@@ -30,8 +30,8 @@ class DeleteDepartmentAdmin(graphene.Mutation):
     @is_logged_in()
     @is_objects_university_admin(model=DepartmentAdmin)
     def mutate(cls, root, info, id):
-        department_admin_user = DepartmentAdmin.objects.get(id=id).user.delete()
-        return DeleteDepartmentAdmin(department_admin_user)
+        department_admin = DepartmentAdmin.objects.get(id=id).user.delete()
+        return DeleteDepartmentAdmin(department_admin)
 
 
 class DeleteDepartment(graphene.Mutation):

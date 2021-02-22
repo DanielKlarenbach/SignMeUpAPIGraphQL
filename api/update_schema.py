@@ -1,5 +1,4 @@
 import graphene
-from django.db import transaction
 
 from api.models import Department, Year, FieldOfStudy, Subject, Points, Application, University
 from api.permissions import is_logged_in, is_objects_university_admin, \
@@ -19,7 +18,7 @@ class UpdateUser(graphene.Mutation):
         email = graphene.String(required=False)
 
     @classmethod
-    @transaction.atomic
+    @is_logged_in()
     def mutate(cls, root, info, **kwargs):
         user = info.context.user
         for k, v in kwargs.items():
@@ -35,9 +34,8 @@ class UpdateUniversity(graphene.Mutation):
         name = graphene.String(required=True)
 
     @classmethod
-    @transaction.atomic()
     @is_logged_in()
-    @is_university_admin
+    @is_university_admin()
     def mutate(cls, root, info, name):
         university_admin_user = info.context.user
         university = University.objects.get(university_admin__user=university_admin_user)
@@ -54,7 +52,6 @@ class UpdateDepartment(graphene.Mutation):
         name = graphene.String(required=True)
 
     @classmethod
-    @transaction.atomic()
     @is_logged_in()
     @is_objects_university_admin(model=Department)
     def mutate(cls, root, info, id, name):
@@ -72,7 +69,6 @@ class UpdateYear(graphene.Mutation):
         start_year = graphene.Int(required=True)
 
     @classmethod
-    @transaction.atomic()
     @is_logged_in()
     @is_objects_department_admin(model=Year)
     def mutate(cls, root, info, id, start_year):
@@ -90,7 +86,6 @@ class UpdateFieldOfStudy(graphene.Mutation):
         name = graphene.String(required=True)
 
     @classmethod
-    @transaction.atomic()
     @is_logged_in()
     @is_objects_department_admin(model=FieldOfStudy, lookup='year__department')
     def mutate(cls, root, info, id, name):
@@ -112,9 +107,9 @@ class UpdateSubject(graphene.Mutation):
         type = graphene.String(required=False)
         start_time = graphene.Time(required=False)
         end_time = graphene.Time(required=False)
+        limit = graphene.Int(required=False)
 
     @classmethod
-    @transaction.atomic()
     @is_logged_in()
     @is_objects_department_admin(Subject, lookup='field_of_study__year__department')
     def mutate(cls, root, info, id, **kwargs):
@@ -133,7 +128,6 @@ class UpdatePoints(graphene.Mutation):
         points = graphene.String(required=True)
 
     @classmethod
-    @transaction.atomic()
     @is_logged_in()
     @is_owner(model=Points)
     def mutate(cls, root, info, id, points):
@@ -151,7 +145,6 @@ class UpdateApplication(graphene.Mutation):
         priority = graphene.Int(required=True)
 
     @classmethod
-    @transaction.atomic()
     @is_logged_in()
     @is_owner(model=Application)
     def mutate(cls, root, info, id, priority):

@@ -100,6 +100,8 @@ class Subject(models.Model):
     type = models.CharField(max_length=1, choices=TYPE_CHOICES)
     start_time = models.TimeField()
     end_time = models.TimeField()
+    occupancy = models.PositiveSmallIntegerField(default=0)
+    limit = models.PositiveSmallIntegerField()
 
     class Meta:
         db_table = 'subjects'

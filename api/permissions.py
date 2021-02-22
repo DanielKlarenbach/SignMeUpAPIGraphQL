@@ -59,7 +59,8 @@ def is_objects_university_admin(model, lookup='university__university_admin', id
             try:
                 obj = model.objects.get(**{lookup: university_admin}, id=kwargs[id_kwarg])
             except model.DoesNotExist:
-                raise Exception('You are not authorized to perform this action, because its out of your scope')
+                raise Exception(
+                    'You are not objects university admin, so you are not authorized to perform this action')
             return func(*args, **kwargs)
 
         return wrapper
@@ -79,7 +80,8 @@ def is_objects_department_admin(model, lookup='department', id_kwarg='id', info_
             try:
                 obj = model.objects.get(**{lookup: department}, id=kwargs[id_kwarg])
             except model.DoesNotExist:
-                raise Exception('You are not authorized to perform this action, you are not the owner')
+                raise Exception(
+                    'You are not objects department admin, so you are not authorized to perform this action')
             return func(*args, **kwargs)
 
         return wrapper
@@ -94,9 +96,8 @@ def is_owner(model, lookup='user', id_kwarg='id', info_index=2):
             user = info.context.user
             try:
                 obj = model.objects.get(**{lookup: user}, id=kwargs[id_kwarg])
-                print(obj)
             except model.DoesNotExist:
-                raise Exception('You are not authorized to perform this action, because its out of your scope')
+                raise Exception('You are not objects owner, so you are not authorized to perform this action')
             return func(*args, **kwargs)
 
         return wrapper
