@@ -23,10 +23,10 @@ class CreateUniversityAdmin(graphene.Mutation):
     @classmethod
     @transaction.atomic
     def mutate(cls, root, info, university_name, username, password, email):
-        user = get_user_model()(username=username, email=email)
-        user.set_password(password)
-        user.save()
-        university_admin = UniversityAdmin.objects.create(user=user)
+        university_admin_user = get_user_model()(username=username, email=email)
+        university_admin_user.set_password(password)
+        university_admin_user.save()
+        university_admin = UniversityAdmin.objects.create(user=university_admin_user)
         University(name=university_name, university_admin=university_admin).save()
         return CreateUniversityAdmin(university_admin)
 
@@ -41,8 +41,9 @@ class CreateDepartment(graphene.Mutation):
     @is_logged_in()
     @is_university_admin()
     def mutate(cls, root, info, name):
-        user = info.context.user
-        department = Department.objects.create(university=user.university_admin.university, name=name)
+        university_admin_user = info.context.user
+        university = university_admin_user.university_admin.university
+        department = Department.objects.create(university=university, name=name)
         return CreateDepartment(department)
 
 
@@ -58,9 +59,8 @@ class CreateDepartmentAdmin(graphene.Mutation):
     @classmethod
     @transaction.atomic
     @is_logged_in()
-    @is_objects_university_admin(Department, id_kwarg='department_id')
+    @is_objects_university_admin(model=Department, id_kwarg='department_id')
     def mutate(cls, root, info, department_id, username, password, email):
-        user = info.context.user
         department_admin_user = get_user_model()(username=username, email=email)
         department_admin_user.set_password(password)
         department_admin_user.save()
@@ -79,8 +79,8 @@ class CreateYear(graphene.Mutation):
     @is_logged_in()
     @is_department_admin()
     def mutate(cls, root, info, start_year):
-        user = info.context.user
-        department = user.department_admin.department
+        department_admin_user = info.context.user
+        department = department_admin_user.department_admin.department
         year = Year.objects.create(start_year=start_year, department=department)
         return CreateYear(year)
 
@@ -94,7 +94,7 @@ class CreateFieldOfStudy(graphene.Mutation):
 
     @classmethod
     @is_logged_in()
-    @is_objects_department_admin(Year, id_kwarg='year_id')
+    @is_objects_department_admin(model=Year, id_kwarg='year_id')
     def mutate(cls, root, info, year_id, name):
         field_of_study = FieldOfStudy.objects.create(name=name, year_id=year_id)
         return CreateFieldOfStudy(field_of_study)
@@ -115,7 +115,7 @@ class CreateSubject(graphene.Mutation):
 
     @classmethod
     @is_logged_in()
-    @is_objects_department_admin(FieldOfStudy, lookup='year__department', id_kwarg='field_of_study_id')
+    @is_objects_department_admin(model=FieldOfStudy, lookup='year__department', id_kwarg='field_of_study_id')
     def mutate(cls, root, info, field_of_study_id, name, description, lecturer, day, type, start_time, end_time):
         subject = Subject.objects.create(field_of_study_id=field_of_study_id, name=name, description=description,
                                          lecturer=lecturer, day=day, type=type, start_time=start_time,
@@ -135,7 +135,7 @@ class CreateStudent(graphene.Mutation):
     @classmethod
     @transaction.atomic
     @is_logged_in()
-    @is_objects_department_admin(FieldOfStudy, lookup='year__department', id_kwarg='field_of_study_id')
+    @is_objects_department_admin(model=FieldOfStudy, lookup='year__department', id_kwarg='field_of_study_id')
     def mutate(cls, root, info, field_of_study_id, username, password, email):
         student_user = get_user_model()(username=username, email=email)
         student_user.set_password(password)
@@ -153,8 +153,8 @@ class CreateSubjectGroup(graphene.Mutation):
 
     @classmethod
     @is_logged_in()
-    @is_objects_department_admin(Student, lookup='field_of_study__year__department', id_kwarg='student_id')
-    @is_objects_department_admin(Subject, lookup='field_of_study__year__department', id_kwarg='subject_id')
+    @is_objects_department_admin(model=Student, lookup='field_of_study__year__department', id_kwarg='student_id')
+    @is_objects_department_admin(model=Subject, lookup='field_of_study__year__department', id_kwarg='subject_id')
     def mutate(cls, root, info, subject_id, student_id):
         subject_group = SubjectGroup.objects.create(subject_id=subject_id, student_id=student_id)
         return CreateSubjectGroup(subject_group)
