@@ -107,6 +107,7 @@ class UpdateSubject(graphene.Mutation):
         type = graphene.String(required=False)
         start_time = graphene.Time(required=False)
         end_time = graphene.Time(required=False)
+        limit = graphene.Int(required=False)
 
     @classmethod
     @is_logged_in()

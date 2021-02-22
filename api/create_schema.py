@@ -112,14 +112,15 @@ class CreateSubject(graphene.Mutation):
         type = graphene.String(required=True)
         start_time = graphene.Time(required=True)
         end_time = graphene.Time(required=True)
+        limit = graphene.Int(required=True)
 
     @classmethod
     @is_logged_in()
     @is_objects_department_admin(model=FieldOfStudy, lookup='year__department', id_kwarg='field_of_study_id')
-    def mutate(cls, root, info, field_of_study_id, name, description, lecturer, day, type, start_time, end_time):
+    def mutate(cls, root, info, field_of_study_id, name, description, lecturer, day, type, start_time, end_time, limit):
         subject = Subject.objects.create(field_of_study_id=field_of_study_id, name=name, description=description,
                                          lecturer=lecturer, day=day, type=type, start_time=start_time,
-                                         end_time=end_time)
+                                         end_time=end_time, limit=limit)
         return CreateSubject(subject)
 
 

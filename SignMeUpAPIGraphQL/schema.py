@@ -2,7 +2,7 @@ import graphene
 import graphql_jwt
 
 import api
-from api import retrieve_schema,create_schema,delete_schema,update_schema,file_schema
+from api import retrieve_schema,create_schema,delete_schema,update_schema,file_schema,make_groups_schema
 
 
 class Query(
@@ -16,6 +16,7 @@ class Mutation(api.create_schema.Mutation,
                api.delete_schema.Mutation,
                api.update_schema.Mutation,
                api.file_schema.Mutation,
+               api.make_groups_schema.Mutation,
                graphene.ObjectType):
     token_auth = graphql_jwt.ObtainJSONWebToken.Field()
     verify_token = graphql_jwt.Verify.Field()
