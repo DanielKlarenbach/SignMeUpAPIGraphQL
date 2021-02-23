@@ -16,7 +16,7 @@ class Mutation(api.create_schema.Mutation,
                api.delete_schema.Mutation,
                api.update_schema.Mutation,
                api.file_schema.Mutation,
-               api.make_groups_schema.Mutation,
+               #api.make_groups_schema.Mutation,
                graphene.ObjectType):
     token_auth = graphql_jwt.ObtainJSONWebToken.Field()
     verify_token = graphql_jwt.Verify.Field()
