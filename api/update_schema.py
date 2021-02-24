@@ -10,6 +10,7 @@ from api.retrieve_schema import DepartmentNode, YearNode, \
 
 
 class UpdateUser(graphene.Mutation):
+    ok = graphene.Boolean()
     user = graphene.Field(UserNode)
 
     class Arguments:
@@ -24,10 +25,11 @@ class UpdateUser(graphene.Mutation):
         for k, v in kwargs.items():
             user.k = v
         user.save()
-        return UpdateUser(user=user)
+        return UpdateUser(ok=True, user=user)
 
 
 class UpdateUniversity(graphene.Mutation):
+    ok = graphene.Boolean()
     university = graphene.Field(UniversityNode)
 
     class Arguments:
@@ -41,10 +43,11 @@ class UpdateUniversity(graphene.Mutation):
         university = University.objects.get(university_admin__user=university_admin_user)
         university.name = name
         university.save()
-        return UpdateUniversity(university)
+        return UpdateUniversity(ok=True, university=university)
 
 
 class UpdateDepartment(graphene.Mutation):
+    ok = graphene.Boolean()
     department = graphene.Field(DepartmentNode)
 
     class Arguments:
@@ -58,10 +61,11 @@ class UpdateDepartment(graphene.Mutation):
         department = Department.objects.get(id=id)
         department.name = name
         department.save()
-        return UpdateDepartment(department)
+        return UpdateDepartment(ok=True, department=department)
 
 
 class UpdateYear(graphene.Mutation):
+    ok = graphene.Boolean()
     year = graphene.Field(YearNode)
 
     class Arguments:
@@ -75,10 +79,11 @@ class UpdateYear(graphene.Mutation):
         year = Year.objects.get(id=id)
         year.start_year = start_year
         year.save()
-        return UpdateYear(year)
+        return UpdateYear(ok=True, year=year)
 
 
 class UpdateFieldOfStudy(graphene.Mutation):
+    ok = graphene.Boolean()
     field_of_study = graphene.Field(FieldOfStudyNode)
 
     class Arguments:
@@ -92,10 +97,11 @@ class UpdateFieldOfStudy(graphene.Mutation):
         field_of_study = FieldOfStudy.objects.get(id=id)
         field_of_study.name = name
         field_of_study.save()
-        return UpdateFieldOfStudy(field_of_study)
+        return UpdateFieldOfStudy(ok=True, field_of_study=field_of_study)
 
 
 class UpdateSubject(graphene.Mutation):
+    ok = graphene.Boolean()
     subject = graphene.Field(SubjectNode)
 
     class Arguments:
@@ -117,10 +123,11 @@ class UpdateSubject(graphene.Mutation):
         for k, v in kwargs.items():
             subject.k = v
         subject.save()
-        return UpdateSubject(subject)
+        return UpdateSubject(ok=True, subject=subject)
 
 
 class UpdatePoints(graphene.Mutation):
+    ok = graphene.Boolean()
     points = graphene.Field(PointsNode)
 
     class Arguments:
@@ -134,10 +141,11 @@ class UpdatePoints(graphene.Mutation):
         subject_points = Points.objects.get(id=id)
         subject_points.points = points
         subject_points.save()
-        return UpdatePoints(points)
+        return UpdatePoints(ok=True, points=points)
 
 
 class UpdateApplication(graphene.Mutation):
+    ok = graphene.Boolean()
     application = graphene.Field(ApplicationNode)
 
     class Arguments:
@@ -151,7 +159,7 @@ class UpdateApplication(graphene.Mutation):
         application = Application.objects.get(id=id)
         application.priority = priority
         application.save()
-        return UpdatePoints(priority)
+        return UpdatePoints(ok=True, application=application)
 
 
 class Mutation(graphene.ObjectType):
