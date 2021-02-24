@@ -9,6 +9,7 @@ from api.retrieve_schema import DepartmentNode, YearNode, FieldOfStudyNode, Subj
 
 
 class DeleteUniversityAdmin(graphene.Mutation):
+    ok = graphene.Boolean()
     university_admin = graphene.Field(UniversityAdminNode)
 
     @classmethod
@@ -17,10 +18,11 @@ class DeleteUniversityAdmin(graphene.Mutation):
     def mutate(cls, root, info):
         university_admin_user = info.context.user
         university_admin = university_admin_user.delete()
-        return DeleteDepartmentAdmin(university_admin)
+        return DeleteDepartmentAdmin(ok=True, university_admin=university_admin)
 
 
 class DeleteDepartmentAdmin(graphene.Mutation):
+    ok = graphene.Boolean()
     department_admin = graphene.Field(DepartmentAdminNode)
 
     class Arguments:
@@ -31,10 +33,11 @@ class DeleteDepartmentAdmin(graphene.Mutation):
     @is_objects_university_admin(model=DepartmentAdmin)
     def mutate(cls, root, info, id):
         department_admin = DepartmentAdmin.objects.get(id=id).user.delete()
-        return DeleteDepartmentAdmin(department_admin)
+        return DeleteDepartmentAdmin(ok=True, department_admin=department_admin)
 
 
 class DeleteDepartment(graphene.Mutation):
+    ok = graphene.Boolean()
     department = graphene.Field(DepartmentNode)
 
     class Arguments:
@@ -45,10 +48,11 @@ class DeleteDepartment(graphene.Mutation):
     @is_objects_university_admin(model=Department)
     def mutate(cls, root, info, id):
         department = Department.objects.get(id=id).delete()
-        return DeleteDepartment(department)
+        return DeleteDepartment(ok=True, department=department)
 
 
 class DeleteYear(graphene.Mutation):
+    ok = graphene.Boolean()
     year = graphene.Field(YearNode)
 
     class Arguments:
@@ -59,10 +63,11 @@ class DeleteYear(graphene.Mutation):
     @is_objects_department_admin(model=Year)
     def mutate(cls, root, info, id):
         year = Year.objects.get(id=id).delete()
-        return DeleteYear(year)
+        return DeleteYear(ok=True, year=year)
 
 
 class DeleteFieldOfStudy(graphene.Mutation):
+    ok = graphene.Boolean()
     field_of_study = graphene.Field(FieldOfStudyNode)
 
     class Arguments:
@@ -73,10 +78,11 @@ class DeleteFieldOfStudy(graphene.Mutation):
     @is_objects_department_admin(model=FieldOfStudy, lookup='year__department')
     def mutate(cls, root, info, id):
         field_of_study = FieldOfStudy.objects.get(id=id).delete()
-        return DeleteFieldOfStudy(field_of_study)
+        return DeleteFieldOfStudy(ok=True, field_of_study=field_of_study)
 
 
 class DeleteSubject(graphene.Mutation):
+    ok = graphene.Boolean()
     subject = graphene.Field(SubjectNode)
 
     class Arguments:
@@ -87,10 +93,11 @@ class DeleteSubject(graphene.Mutation):
     @is_objects_department_admin(model=Subject, lookup='field_of_study__year__department')
     def mutate(cls, root, info, id):
         subject = Subject.objects.get(id=id).delete()
-        return DeleteSubject(subject)
+        return DeleteSubject(ok=True, subject=subject)
 
 
 class DeleteStudent(graphene.Mutation):
+    ok = graphene.Boolean()
     student = graphene.Field(StudentNode)
 
     class Arguments:
@@ -101,10 +108,11 @@ class DeleteStudent(graphene.Mutation):
     @is_objects_department_admin(model=Student, lookup='field_of_study__year__department')
     def mutate(cls, root, info, id):
         student = Student.objects.get(id=id).delete()
-        return DeleteStudent(student)
+        return DeleteStudent(ok=True, student=student)
 
 
 class DeleteSubjectGroup(graphene.Mutation):
+    ok = graphene.Boolean()
     subject_group = graphene.Field(SubjectGroupNode)
 
     class Arguments:
@@ -116,10 +124,11 @@ class DeleteSubjectGroup(graphene.Mutation):
     @is_objects_department_admin(model=Student, lookup='field_of_study__year__department', id_kwarg='student_id')
     def mutate(cls, root, info, id, student_id):
         subject_group = SubjectGroup.objects.get(id=id).delete()
-        return DeleteSubjectGroup(subject_group)
+        return DeleteSubjectGroup(ok=True, subject_group=subject_group)
 
 
 class DeleteApplication(graphene.Mutation):
+    ok = graphene.Boolean()
     application = graphene.Field(ApplicationNode)
 
     class Arguments:
@@ -130,10 +139,11 @@ class DeleteApplication(graphene.Mutation):
     @is_owner(model=Application)
     def mutate(cls, root, info, id):
         application = Application.objects.get(id=id).delete()
-        return DeleteApplication(application)
+        return DeleteApplication(ok=True, application=application)
 
 
 class DeletePoints(graphene.Mutation):
+    ok = graphene.Boolean()
     points = graphene.Field(PointsNode)
 
     class Arguments:
@@ -144,7 +154,7 @@ class DeletePoints(graphene.Mutation):
     @is_owner(model=Points)
     def mutate(cls, root, info, id):
         points = Points.objects.get(id=id).delete()
-        return DeletePoints(points)
+        return DeletePoints(ok=True, points=points)
 
 
 class Mutation(graphene.ObjectType):

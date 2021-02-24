@@ -8,6 +8,7 @@ from api.permissions import is_logged_in, is_objects_department_admin
 
 
 class MakeGroups(graphene.Mutation):
+    ok = graphene.Boolean()
 
     class Arguments:
         field_of_study_id = graphene.Int(required=True, name='fieldOfStudyId')
@@ -41,7 +42,7 @@ class MakeGroups(graphene.Mutation):
                     SubjectGroup(subject=subject_with_free_places, student=student).save()
                     if subject_with_free_places.occupancy == subject_with_free_places.limit:
                         subjects_with_free_places.exclude(id=subject_with_free_places.id)
-        return MakeGroups()
+        return MakeGroups(ok=True)
 
 
 class Mutation(graphene.ObjectType):
