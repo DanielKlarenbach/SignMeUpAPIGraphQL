@@ -129,3 +129,5 @@ dmypy.json
 .pyre/
 
 api/migrations/
+
+api/generate_random_data.py
