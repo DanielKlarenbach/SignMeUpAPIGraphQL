@@ -9,6 +9,7 @@ from api.permissions import is_logged_in, is_department_admin, is_university_adm
 from api.retrieve_schema import DepartmentNode, UniversityAdminNode, YearNode, \
     FieldOfStudyNode, \
     SubjectNode, StudentNode, SubjectGroupNode, DepartmentAdminNode, PointsNode, ApplicationNode
+from api.tasks import check_for_matching_application
 
 
 class CreateUniversityAdmin(graphene.Mutation):
@@ -206,6 +207,7 @@ class CreateApplication(graphene.Mutation):
         application = Application.objects.create(unwanted_subject_id=unwanted_subject_id,
                                                  wanted_subject_id=wanted_subject_id,
                                                  student_id=student_id, priority=priority)
+        check_for_matching_application.delay()
         return CreateApplication(ok=True, application=application)
 
 

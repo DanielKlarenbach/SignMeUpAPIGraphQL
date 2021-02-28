@@ -83,7 +83,7 @@ WSGI_APPLICATION = 'SignMeUpAPIGraphQL.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'GQL2',
+        'NAME': 'GQL',
         'USER': 'postgres',
         'PASSWORD': 'ebee407f18b2bea49dc430d6acfb03c2',
         'HOST': '127.0.0.1',
@@ -141,3 +141,5 @@ AUTHENTICATION_BACKENDS = [
     'graphql_jwt.backends.JSONWebTokenBackend',
     'django.contrib.auth.backends.ModelBackend',
 ]
+
+CELERY_BROKER_URL='pyamqp://guest@localhost//'

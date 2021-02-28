@@ -105,9 +105,6 @@ class Subject(models.Model):
 
     class Meta:
         db_table = 'subjects'
-        constraints = [
-            models.UniqueConstraint(fields=['field_of_study', 'name'], name='unique_subject')
-        ]
 
     def __str__(self):
         return f"{self.field_of_study} Subject: {self.name} Day: {self.day} Time: {self.start_time}:{self.end_time}"
@@ -163,7 +160,6 @@ class Application(models.Model):
     unwanted_subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name="unwanted_applications")
     wanted_subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name="wanted_applications")
     student = models.ForeignKey(Student, related_name='applications', on_delete=models.CASCADE)
-    priority = models.PositiveSmallIntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
