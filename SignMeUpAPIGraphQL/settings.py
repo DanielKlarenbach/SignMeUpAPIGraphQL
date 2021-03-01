@@ -83,7 +83,7 @@ WSGI_APPLICATION = 'SignMeUpAPIGraphQL.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'GQL',
+        'NAME': 'GQL3',
         'USER': 'postgres',
         'PASSWORD': 'ebee407f18b2bea49dc430d6acfb03c2',
         'HOST': '127.0.0.1',
@@ -143,3 +143,5 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 CELERY_BROKER_URL='pyamqp://guest@localhost//'
+
+TEST_RUNNER = "django_nose.NoseTestSuiteRunner"
