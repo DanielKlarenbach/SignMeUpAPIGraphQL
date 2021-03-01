@@ -69,9 +69,19 @@ class FieldOfStudy(models.Model):
         return f"{self.year} Field of study: {self.name}"
 
 
+class SubjectType(models.Model):
+    name = models.CharField(max_length=50)
+
+    class Meta:
+        db_table = 'subjects_types'
+
+    def __str__(self):
+        return self.name
+
+
 class Subject(models.Model):
     field_of_study = models.ForeignKey(FieldOfStudy, related_name='subjects', on_delete=models.CASCADE)
-    name = models.CharField(max_length=50)
+    subject_type = models.ForeignKey(SubjectType, related_name='subjects', on_delete=models.CASCADE)
     description = models.CharField(max_length=100)
     lecturer = models.CharField(max_length=50)
     MONDAY = "MONDAY"
@@ -107,7 +117,7 @@ class Subject(models.Model):
         db_table = 'subjects'
 
     def __str__(self):
-        return f"{self.field_of_study} Subject: {self.name} Day: {self.day} Time: {self.start_time}:{self.end_time}"
+        return f"{self.field_of_study} Subject: {self.subject_type} Day: {self.day} Time: {self.start_time}:{self.end_time}"
 
 
 class DepartmentAdmin(models.Model):
