@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 from graphene_django import DjangoObjectType
 
 from api.models import University, Department, Year, FieldOfStudy, Subject, Student, SubjectGroup, Points, Application, \
-    UniversityAdmin, DepartmentAdmin
+    UniversityAdmin, DepartmentAdmin, SubjectType
 from api.permissions import is_logged_in, is_department_admin, is_university_admin
 
 
@@ -22,14 +22,14 @@ class PointsNode(DjangoObjectType):
 class ApplicationNode(DjangoObjectType):
     class Meta:
         model = Application
-        fields = ('id', 'priority', 'created_at', 'unwanted_subject', 'wanted_subject', 'student')
+        fields = ('id', 'created_at', 'unwanted_subject', 'wanted_subject', 'student')
 
 
 class SubjectNode(DjangoObjectType):
     class Meta:
         model = Subject
         fields = (
-        'id', 'name', 'description', 'lecturer', 'type', 'day', 'start_time', 'end_time', 'limit', 'field_of_study')
+            'id', 'description', 'lecturer', 'type', 'day', 'start_time', 'end_time', 'limit', 'subject_type')
 
     subject_groups = graphene.List(SubjectGroupNode)
     points = graphene.List(PointsNode)
@@ -51,6 +51,12 @@ class SubjectNode(DjangoObjectType):
         return Application.objects.filter(subject=self)
 
 
+class SubjectTypeNode(DjangoObjectType):
+    class Meta:
+        model = SubjectType
+        fields = ('id', 'name', 'subjects')
+
+
 class StudentNode(DjangoObjectType):
     class Meta:
         model = Student
@@ -60,7 +66,7 @@ class StudentNode(DjangoObjectType):
 class FieldOfStudyNode(DjangoObjectType):
     class Meta:
         model = FieldOfStudy
-        fields = ('id', 'name', 'year', 'subjects')
+        fields = ('id', 'name', 'year', 'subject_types')
 
     students = graphene.List(StudentNode)
 

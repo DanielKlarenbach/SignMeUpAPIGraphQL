@@ -1,11 +1,11 @@
 import graphene
 
-from api.models import Department, Year, FieldOfStudy, Subject, Points, Application, University
+from api.models import Department, Year, FieldOfStudy, Subject, Points, University
 from api.permissions import is_logged_in, is_objects_university_admin, \
     is_objects_department_admin, is_owner, is_university_admin
 from api.retrieve_schema import DepartmentNode, YearNode, \
     FieldOfStudyNode, \
-    SubjectNode, PointsNode, ApplicationNode, UserNode, \
+    SubjectNode, PointsNode, UserNode, \
     UniversityNode
 
 
@@ -144,24 +144,6 @@ class UpdatePoints(graphene.Mutation):
         return UpdatePoints(ok=True, points=points)
 
 
-class UpdateApplication(graphene.Mutation):
-    ok = graphene.Boolean()
-    application = graphene.Field(ApplicationNode)
-
-    class Arguments:
-        id = graphene.Int(required=True)
-        priority = graphene.Int(required=True)
-
-    @classmethod
-    @is_logged_in()
-    @is_owner(model=Application)
-    def mutate(cls, root, info, id, priority):
-        application = Application.objects.get(id=id)
-        application.priority = priority
-        application.save()
-        return UpdatePoints(ok=True, application=application)
-
-
 class Mutation(graphene.ObjectType):
     update_user = UpdateUser.Field()
     update_university = UpdateUniversity.Field()
@@ -170,4 +152,3 @@ class Mutation(graphene.ObjectType):
     update_field_of_study = UpdateFieldOfStudy.Field()
     update_subject = UpdateSubject.Field()
     update_points = UpdatePoints.Field()
-    update_application = UpdateApplication

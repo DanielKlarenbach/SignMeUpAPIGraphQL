@@ -1,4 +1,4 @@
-from api.models import UniversityAdmin, DepartmentAdmin, Department
+from api.models import UniversityAdmin, DepartmentAdmin, Department, Subject, SubjectType, FieldOfStudy
 
 
 def is_logged_in(info_index=2):
