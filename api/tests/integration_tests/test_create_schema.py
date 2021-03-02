@@ -3,7 +3,7 @@ import os
 from django.test import RequestFactory
 
 from api.models import UniversityAdmin, University, Department, DepartmentAdmin, Year, FieldOfStudy, SubjectType, \
-    Subject, Student
+    Subject, Student, SubjectGroup, Application, Points
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'SignMeUpAPIGraphQL.settings')
 import django
@@ -68,20 +68,24 @@ class TestCreateSchema(django.test.TestCase):
                                                end_time='16:00',
                                                limit=15)
 
-        self.student_user=djc_auth.get_user_model()(username="student",
-                                                               email="student@gmail.com")
+        self.student_user = djc_auth.get_user_model()(username="student",
+                                                      email="student@gmail.com")
         self.student_user.set_password('pass')
         self.student_user.save()
         token = gql_jwt_shortcuts.get_token(self.student_user)
         self.student_user_headers = {"HTTP_AUTHORIZATION": f"JWT {token}"}
 
-        self.student=Student.objects.create(user=self.student_user,field_of_study=self.field_of_study)
+        self.student = Student.objects.create(user=self.student_user, field_of_study=self.field_of_study)
 
-    def test_create_university(self):
+    def test_create_university_admin(self):
         mutation = '''
             mutation CreateUniversityAdmin($universityName: String!, $username : String!, $password : String!, $email : String!){
                 createUniversityAdmin(universityName: $universityName, username: $username, password: $password, email : $email){
-                    ok
+                    universityAdmin{
+                        user{
+                            username
+                        }
+                    }
                 }
             }
         '''
@@ -95,15 +99,18 @@ class TestCreateSchema(django.test.TestCase):
             mutation,
             variables=input,
         )
-        print(response)
-        ok = response.get("data").get("createUniversityAdmin").get("ok")
-        self.assertTrue(ok)
+        db_university_admin = UniversityAdmin.objects.get(user__username=input['username'])
+        self.assertEqual(db_university_admin.user.username, input['username'])
+        response_university_admin = response.get("data").get("createUniversityAdmin").get("universityAdmin")
+        self.assertEqual(response_university_admin['user']['username'], input['username'])
 
     def test_create_department(self):
         mutation = '''
             mutation CreateDepartment($name : String!){
                 createDepartment(name: $name){
-                    ok
+                    department{
+                        name
+                    }
                 }
             }
         '''
@@ -119,15 +126,20 @@ class TestCreateSchema(django.test.TestCase):
             headers=self.university_admin_headers,
             context_value=context_value
         )
-        print(response)
-        ok = response.get("data").get("createDepartment").get("ok")
-        self.assertTrue(ok)
+        db_department = Department.objects.get(name=input['name'])
+        self.assertEqual(db_department.name, input['name'])
+        response_department = response.get("data").get("createDepartment").get("department")
+        self.assertEqual(response_department['name'], input['name'])
 
     def test_create_department_admin(self):
         mutation = '''
             mutation CreateDepartmentAdmin($departmentId: Int!, $username : String!, $password : String!, $email : String!){
                 createDepartmentAdmin(departmentId: $departmentId, username: $username, password: $password, email : $email){
-                    ok
+                    departmentAdmin{
+                        user{
+                            username
+                        }
+                    }
                 }
             }
         '''
@@ -146,15 +158,18 @@ class TestCreateSchema(django.test.TestCase):
             headers=self.university_admin_headers,
             context_value=context_value
         )
-        print(response)
-        ok = response.get("data").get("createDepartmentAdmin").get("ok")
-        self.assertTrue(ok)
+        db_department_admin = DepartmentAdmin.objects.get(user__username=input['username'])
+        self.assertEqual(db_department_admin.user.username, input['username'])
+        response_department_admin = response.get("data").get("createDepartmentAdmin").get("departmentAdmin")
+        self.assertEqual(response_department_admin['user']['username'], input['username'])
 
     def test_create_year(self):
         mutation = '''
             mutation CreateYear($startYear: Int!){
                 createYear(startYear: $startYear){
-                    ok
+                    year{
+                        startYear
+                    }
                 }
             }
         '''
@@ -170,15 +185,18 @@ class TestCreateSchema(django.test.TestCase):
             headers=self.department_admin_headers,
             context_value=context_value
         )
-        print(response)
-        ok = response.get("data").get("createYear").get("ok")
-        self.assertTrue(ok)
+        db_year = Year.objects.get(start_year=input['startYear'], department=self.department_admin.department)
+        self.assertEqual(db_year.start_year, input['startYear'])
+        response_year = response.get("data").get("createYear").get("year")
+        self.assertEqual(response_year['startYear'], input['startYear'])
 
     def test_create_field_of_study(self):
         mutation = '''
             mutation CreateFieldOfStudy($yearId: Int!,$name : String!){
                 createFieldOfStudy(yearId: $yearId,name : $name){
-                    ok
+                    fieldOfStudy{
+                        name
+                    }
                 }
             }
         '''
@@ -195,15 +213,18 @@ class TestCreateSchema(django.test.TestCase):
             headers=self.department_admin_headers,
             context_value=context_value
         )
-        print(response)
-        ok = response.get("data").get("createFieldOfStudy").get("ok")
-        self.assertTrue(ok)
+        db_field_of_study = FieldOfStudy.objects.get(year_id=input['yearId'], name=input['name'])
+        self.assertEqual(db_field_of_study.name, input['name'])
+        response_field_of_study = response.get("data").get("createFieldOfStudy").get("fieldOfStudy")
+        self.assertEqual(response_field_of_study['name'], input['name'])
 
     def test_create_subject_type(self):
         mutation = '''
             mutation CreateSubjectType($fieldOfStudyId: Int!,$name : String!){
                 createSubjectType(fieldOfStudyId: $fieldOfStudyId,name : $name){
-                    ok
+                    subjectType{
+                        name
+                    }
                 }
             }
         '''
@@ -220,15 +241,18 @@ class TestCreateSchema(django.test.TestCase):
             headers=self.department_admin_headers,
             context_value=context_value
         )
-        print(response)
-        ok = response.get("data").get("createSubjectType").get("ok")
-        self.assertTrue(ok)
+        db_subject_type = SubjectType.objects.get(field_of_study_id=input['fieldOfStudyId'], name=input['name'])
+        self.assertEqual(db_subject_type.name, input['name'])
+        response_subject_type = response.get("data").get("createSubjectType").get("subjectType")
+        self.assertEqual(response_subject_type['name'], input['name'])
 
     def test_create_subject(self):
         mutation = '''
             mutation CreateSubject($subjectTypeId: Int!,$description : String!, $lecturer: String!, $day : String!, $type : String!, $startTime : Time!, $endTime : Time!, $limit : Int!){
                 createSubject(subjectTypeId: $subjectTypeId,description : $description, lecturer : $lecturer, day : $day, type : $type, startTime : $startTime, endTime : $endTime, limit : $limit){
-                    ok
+                    subject{
+                        day
+                    }
                 }
             }
         '''
@@ -236,7 +260,7 @@ class TestCreateSchema(django.test.TestCase):
             'subjectTypeId': self.subject_type.id,
             'description': 'test_description',
             'lecturer': 'test_lecturer',
-            'day': 'MONDAY',
+            'day': 'FRIDAY',
             'type': 'P',
             'startTime': '14:30',
             'endTime': '16:00',
@@ -251,15 +275,20 @@ class TestCreateSchema(django.test.TestCase):
             headers=self.department_admin_headers,
             context_value=context_value
         )
-        print(response)
-        ok = response.get("data").get("createSubject").get("ok")
-        self.assertTrue(ok)
+        db_subject = Subject.objects.get(subject_type_id=input['subjectTypeId'], day=input['day'])
+        self.assertEqual(db_subject.day, input['day'])
+        response_subject = response.get("data").get("createSubject").get("subject")
+        self.assertEqual(response_subject['day'], input['day'])
 
     def test_create_student(self):
         mutation = '''
             mutation CreateStudent($fieldOfStudyId: Int!, $username : String!, $password : String!, $email : String!){
                 createStudent(fieldOfStudyId: $fieldOfStudyId, username: $username, password: $password, email : $email){
-                    ok
+                    student{
+                        user{
+                            username
+                        }
+                    }
                 }
             }
         '''
@@ -278,21 +307,26 @@ class TestCreateSchema(django.test.TestCase):
             headers=self.department_admin_headers,
             context_value=context_value
         )
-        print(response)
-        ok = response.get("data").get("createStudent").get("ok")
-        self.assertTrue(ok)
+        db_student = Student.objects.get(user__username=input['username'])
+        self.assertEqual(db_student.user.username, input['username'])
+        response_student = response.get("data").get("createStudent").get("student")
+        self.assertEqual(response_student['user']['username'], input['username'])
 
     def test_create_subject_group(self):
         mutation = '''
             mutation CreateSubjectGroup($subjectId: Int!, $studentId : Int!){
                 createSubjectGroup(subjectId: $subjectId, studentId: $studentId){
-                    ok
+                    subjectGroup{
+                        student{
+                            id
+                        }
+                    }
                 }
             }
         '''
         input = {
-            'subjectId' : self.subject1.id,
-            'studentId' : self.student.id
+            'subjectId': self.subject1.id,
+            'studentId': self.student.id
         }
 
         context_value = RequestFactory().get('/api/')
@@ -303,22 +337,27 @@ class TestCreateSchema(django.test.TestCase):
             headers=self.department_admin_headers,
             context_value=context_value
         )
-        print(response)
-        ok = response.get("data").get("createSubjectGroup").get("ok")
-        self.assertTrue(ok)
+        db_subject_group = SubjectGroup.objects.get(student_id=input['studentId'], subject_id=input['subjectId'])
+        self.assertEqual(db_subject_group.student.id, input['studentId'])
+        response_subject_group = response.get("data").get("createSubjectGroup").get("subjectGroup")
+        self.assertEqual(int(response_subject_group['student']['id']), input['studentId'])
 
-    def test_create_applications(self):
+    def test_create_application(self):
         mutation = '''
             mutation CreateApplication($unwantedSubjectId: Int!, $wantedSubjectId : Int!, $studentId : Int!){
                 createApplication(unwantedSubjectId: $unwantedSubjectId, wantedSubjectId : $wantedSubjectId, studentId: $studentId){
-                    ok
+                    application{
+                        student{
+                            id
+                        }
+                    }
                 }
             }
         '''
         input = {
-            'unwantedSubjectId' : self.subject1.id,
+            'unwantedSubjectId': self.subject1.id,
             'wantedSubjectId': self.subject2.id,
-            'studentId' : self.student.id
+            'studentId': self.student.id
         }
 
         context_value = RequestFactory().get('/api/')
@@ -329,22 +368,29 @@ class TestCreateSchema(django.test.TestCase):
             headers=self.student_user_headers,
             context_value=context_value
         )
-        print(response)
-        ok = response.get("data").get('createApplication').get("ok")
-        self.assertTrue(ok)
+        db_application = Application.objects.get(student_id=input['studentId'],
+                                                 unwanted_subject_id=input['unwantedSubjectId'],
+                                                 wanted_subject_id=input['wantedSubjectId'])
+        self.assertEqual(db_application.student.id, input['studentId'])
+        response_application = response.get("data").get("createApplication").get("application")
+        self.assertEqual(int(response_application['student']['id']), input['studentId'])
 
     def test_create_points(self):
         mutation = '''
             mutation CreatePoints($subjectId: Int!, $studentId : Int!, $points : Int!){
                 createPoints(subjectId: $subjectId, studentId: $studentId, points : $points){
-                    ok
+                    points{
+                        student{
+                            id
+                        }
+                    }
                 }
             }
         '''
         input = {
-            'subjectId' : self.subject1.id,
-            'studentId' : self.student.id,
-            'points' : 8
+            'subjectId': self.subject1.id,
+            'studentId': self.student.id,
+            'points': 8
         }
 
         context_value = RequestFactory().get('/api/')
@@ -355,7 +401,7 @@ class TestCreateSchema(django.test.TestCase):
             headers=self.student_user_headers,
             context_value=context_value
         )
-        print(response)
-        ok = response.get("data").get("createPoints").get("ok")
-        self.assertTrue(ok)
-
+        db_points = Points.objects.get(student_id=input['studentId'], subject_id=input['subjectId'])
+        self.assertEqual(db_points.student.id, input['studentId'])
+        response_points = response.get("data").get("createPoints").get("points")
+        self.assertEqual(int(response_points['student']['id']), input['studentId'])

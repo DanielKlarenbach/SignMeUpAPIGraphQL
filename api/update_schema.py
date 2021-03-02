@@ -10,7 +10,6 @@ from api.retrieve_schema import DepartmentNode, YearNode, \
 
 
 class UpdateUser(graphene.Mutation):
-    ok = graphene.Boolean()
     user = graphene.Field(UserNode)
 
     class Arguments:
@@ -23,13 +22,15 @@ class UpdateUser(graphene.Mutation):
     def mutate(cls, root, info, **kwargs):
         user = info.context.user
         for k, v in kwargs.items():
-            user.k = v
+            if (k == 'password') and (v is not None):
+                user.set_password(v)
+            else:
+                setattr(user, k, v)
         user.save()
-        return UpdateUser(ok=True, user=user)
+        return UpdateUser(user=user)
 
 
 class UpdateUniversity(graphene.Mutation):
-    ok = graphene.Boolean()
     university = graphene.Field(UniversityNode)
 
     class Arguments:
@@ -43,11 +44,10 @@ class UpdateUniversity(graphene.Mutation):
         university = University.objects.get(university_admin__user=university_admin_user)
         university.name = name
         university.save()
-        return UpdateUniversity(ok=True, university=university)
+        return UpdateUniversity(university=university)
 
 
 class UpdateDepartment(graphene.Mutation):
-    ok = graphene.Boolean()
     department = graphene.Field(DepartmentNode)
 
     class Arguments:
@@ -61,11 +61,10 @@ class UpdateDepartment(graphene.Mutation):
         department = Department.objects.get(id=id)
         department.name = name
         department.save()
-        return UpdateDepartment(ok=True, department=department)
+        return UpdateDepartment(department=department)
 
 
 class UpdateYear(graphene.Mutation):
-    ok = graphene.Boolean()
     year = graphene.Field(YearNode)
 
     class Arguments:
@@ -79,11 +78,10 @@ class UpdateYear(graphene.Mutation):
         year = Year.objects.get(id=id)
         year.start_year = start_year
         year.save()
-        return UpdateYear(ok=True, year=year)
+        return UpdateYear(year=year)
 
 
 class UpdateFieldOfStudy(graphene.Mutation):
-    ok = graphene.Boolean()
     field_of_study = graphene.Field(FieldOfStudyNode)
 
     class Arguments:
@@ -97,16 +95,14 @@ class UpdateFieldOfStudy(graphene.Mutation):
         field_of_study = FieldOfStudy.objects.get(id=id)
         field_of_study.name = name
         field_of_study.save()
-        return UpdateFieldOfStudy(ok=True, field_of_study=field_of_study)
+        return UpdateFieldOfStudy(field_of_study=field_of_study)
 
 
 class UpdateSubject(graphene.Mutation):
-    ok = graphene.Boolean()
     subject = graphene.Field(SubjectNode)
 
     class Arguments:
         id = graphene.Int(required=True)
-        name = graphene.String(required=False)
         description = graphene.String(required=False)
         lecturer = graphene.String(required=False)
         day = graphene.String(required=False)
@@ -117,31 +113,30 @@ class UpdateSubject(graphene.Mutation):
 
     @classmethod
     @is_logged_in()
-    @is_objects_department_admin(Subject, lookup='field_of_study__year__department')
+    @is_objects_department_admin(Subject, lookup='subject_type__field_of_study__year__department')
     def mutate(cls, root, info, id, **kwargs):
         subject = Subject.objects.get(id=id)
         for k, v in kwargs.items():
-            subject.k = v
+            setattr(subject, k, v)
         subject.save()
-        return UpdateSubject(ok=True, subject=subject)
+        return UpdateSubject(subject=subject)
 
 
 class UpdatePoints(graphene.Mutation):
-    ok = graphene.Boolean()
     points = graphene.Field(PointsNode)
 
     class Arguments:
         id = graphene.Int(required=True)
-        points = graphene.String(required=True)
+        points = graphene.Int(required=True)
 
     @classmethod
     @is_logged_in()
-    @is_owner(model=Points)
+    @is_owner(model=Points, lookup='student__user')
     def mutate(cls, root, info, id, points):
         subject_points = Points.objects.get(id=id)
         subject_points.points = points
         subject_points.save()
-        return UpdatePoints(ok=True, points=points)
+        return UpdatePoints(points=subject_points)
 
 
 class Mutation(graphene.ObjectType):
