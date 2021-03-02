@@ -27,7 +27,7 @@ class UpdateUser(graphene.Mutation):
             else:
                 setattr(user, k, v)
         user.save()
-        return UpdateUser(ok=True, user=user)
+        return UpdateUser(user=user)
 
 
 class UpdateUniversity(graphene.Mutation):
@@ -44,7 +44,7 @@ class UpdateUniversity(graphene.Mutation):
         university = University.objects.get(university_admin__user=university_admin_user)
         university.name = name
         university.save()
-        return UpdateUniversity( university=university)
+        return UpdateUniversity(university=university)
 
 
 class UpdateDepartment(graphene.Mutation):
@@ -95,7 +95,7 @@ class UpdateFieldOfStudy(graphene.Mutation):
         field_of_study = FieldOfStudy.objects.get(id=id)
         field_of_study.name = name
         field_of_study.save()
-        return UpdateFieldOfStudy( field_of_study=field_of_study)
+        return UpdateFieldOfStudy(field_of_study=field_of_study)
 
 
 class UpdateSubject(graphene.Mutation):
@@ -103,7 +103,6 @@ class UpdateSubject(graphene.Mutation):
 
     class Arguments:
         id = graphene.Int(required=True)
-        name = graphene.String(required=False)
         description = graphene.String(required=False)
         lecturer = graphene.String(required=False)
         day = graphene.String(required=False)
@@ -114,7 +113,7 @@ class UpdateSubject(graphene.Mutation):
 
     @classmethod
     @is_logged_in()
-    @is_objects_department_admin(Subject, lookup='field_of_study__year__department')
+    @is_objects_department_admin(Subject, lookup='subject_type__field_of_study__year__department')
     def mutate(cls, root, info, id, **kwargs):
         subject = Subject.objects.get(id=id)
         for k, v in kwargs.items():
@@ -128,16 +127,16 @@ class UpdatePoints(graphene.Mutation):
 
     class Arguments:
         id = graphene.Int(required=True)
-        points = graphene.String(required=True)
+        points = graphene.Int(required=True)
 
     @classmethod
     @is_logged_in()
-    @is_owner(model=Points)
+    @is_owner(model=Points, lookup='student__user')
     def mutate(cls, root, info, id, points):
         subject_points = Points.objects.get(id=id)
         subject_points.points = points
         subject_points.save()
-        return UpdatePoints(points=points)
+        return UpdatePoints(points=subject_points)
 
 
 class Mutation(graphene.ObjectType):

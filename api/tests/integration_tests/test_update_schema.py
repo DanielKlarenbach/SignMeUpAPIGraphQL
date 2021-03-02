@@ -3,7 +3,7 @@ import os
 from django.test import RequestFactory
 
 from api.models import UniversityAdmin, University, Department, DepartmentAdmin, Year, FieldOfStudy, SubjectType, \
-    Subject, Student, SubjectGroup, Application, Points
+    Subject, Student, Points
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'SignMeUpAPIGraphQL.settings')
 import django
@@ -77,6 +77,8 @@ class TestUpdateSchema(django.test.TestCase):
 
         self.student = Student.objects.create(user=self.student_user, field_of_study=self.field_of_study)
 
+        self.points = Points.objects.create(student=self.student, subject=self.subject1, points=8)
+
     def test_update_user(self):
         mutation = '''
             mutation UpdateUser($username : String!, $email : String!){
@@ -99,8 +101,169 @@ class TestUpdateSchema(django.test.TestCase):
             headers=self.university_admin_headers,
             context_value=context_value
         )
-        print(response)
         db_user = djc_auth.get_user_model().objects.get(username=input['username'])
         self.assertEqual(db_user.username, input['username'])
         response_user = response.get("data").get("updateUser").get("user")
         self.assertEqual(response_user['username'], input['username'])
+
+    def test_update_university(self):
+        mutation = '''
+            mutation UpdateUniversity($name : String!){
+                updateUniversity(name : $name){
+                    university{
+                        name
+                    }
+                }
+            }
+        '''
+        input = {
+            'name': 'updated_university',
+        }
+        context_value = RequestFactory().get('/api/')
+        context_value.user = self.university_admin_user
+        response = self.client.execute(
+            mutation,
+            variables=input,
+            headers=self.university_admin_headers,
+            context_value=context_value
+        )
+        db_university = University.objects.get(name=input['name'])
+        self.assertEqual(db_university.name, input['name'])
+        response_university = response.get("data").get("updateUniversity").get("university")
+        self.assertEqual(response_university['name'], input['name'])
+
+    def test_update_department(self):
+        mutation = '''
+            mutation UpdateDepartment($id : Int!, $name : String!){
+                updateDepartment(id : $id, name : $name){
+                    department{
+                        name
+                    }
+                }
+            }
+        '''
+        input = {
+            'id': self.department.id,
+            'name': 'updated_department',
+        }
+        context_value = RequestFactory().get('/api/')
+        context_value.user = self.university_admin_user
+        response = self.client.execute(
+            mutation,
+            variables=input,
+            headers=self.university_admin_headers,
+            context_value=context_value
+        )
+        db_department = Department.objects.get(id=input['id'])
+        self.assertEqual(db_department.name, input['name'])
+        response_department = response.get("data").get("updateDepartment").get("department")
+        self.assertEqual(response_department['name'], input['name'])
+
+    def test_update_year(self):
+        mutation = '''
+            mutation UpdateYear($id : Int!, $startYear : Int!){
+                updateYear(id : $id, startYear : $startYear){
+                    year{
+                        startYear
+                    }
+                }
+            }
+        '''
+        input = {
+            'id': self.year.id,
+            'startYear': 2020,
+        }
+        context_value = RequestFactory().get('/api/')
+        context_value.user = self.department_admin_user
+        response = self.client.execute(
+            mutation,
+            variables=input,
+            headers=self.department_admin_headers,
+            context_value=context_value
+        )
+        db_year = Year.objects.get(id=input['id'])
+        self.assertEqual(db_year.start_year, input['startYear'])
+        response_year = response.get("data").get("updateYear").get("year")
+        self.assertEqual(response_year['startYear'], input['startYear'])
+
+    def test_update_field_of_study(self):
+        mutation = '''
+            mutation UpdateFieldOfStudy($id : Int!, $name : String!){
+                updateFieldOfStudy(id : $id, name : $name){
+                    fieldOfStudy{
+                        name
+                    }
+                }
+            }
+        '''
+        input = {
+            'id': self.field_of_study.id,
+            'name': 'updated_field_of-study',
+        }
+        context_value = RequestFactory().get('/api/')
+        context_value.user = self.department_admin_user
+        response = self.client.execute(
+            mutation,
+            variables=input,
+            headers=self.department_admin_headers,
+            context_value=context_value
+        )
+        db_field_of_study = FieldOfStudy.objects.get(id=input['id'])
+        self.assertEqual(db_field_of_study.name, input['name'])
+        response_field_of_study = response.get("data").get("updateFieldOfStudy").get("fieldOfStudy")
+        self.assertEqual(response_field_of_study['name'], input['name'])
+
+    def test_update_subject(self):
+        mutation = '''
+            mutation UpdateSubject($id : Int!, $lecturer : String!, $limit : Int!){
+                updateSubject(id : $id, lecturer : $lecturer, limit : $limit ){
+                    subject{
+                        limit
+                    }
+                }
+            }
+        '''
+        input = {
+            'id': self.subject1.id,
+            'lecturer': 'updated_lecturer',
+            'limit': 17,
+        }
+        context_value = RequestFactory().get('/api/')
+        context_value.user = self.department_admin_user
+        response = self.client.execute(
+            mutation,
+            variables=input,
+            headers=self.department_admin_headers,
+            context_value=context_value
+        )
+        db_subject = Subject.objects.get(id=input['id'])
+        self.assertEqual(db_subject.limit, input['limit'])
+        response_subject = response.get("data").get("updateSubject").get("subject")
+        self.assertEqual(response_subject['limit'], input['limit'])
+
+    def test_update_points(self):
+        mutation = '''
+            mutation UpdatePoints($id : Int!, $points : Int!){
+                updatePoints(id : $id, points : $points){
+                    points{
+                        points
+                    }
+                }
+            }
+        '''
+        input = {
+            'id': self.points.id,
+            'points': 4,
+        }
+        context_value = RequestFactory().get('/api/')
+        context_value.user = self.student_user
+        response = self.client.execute(
+            mutation,
+            variables=input,
+            headers=self.student_user_headers,
+            context_value=context_value
+        )
+        db_points = Points.objects.get(id=input['id'])
+        self.assertEqual(db_points.points, input['points'])
+        response_points = response.get("data").get("updatePoints").get("points")
+        self.assertEqual(response_points['points'], input['points'])
