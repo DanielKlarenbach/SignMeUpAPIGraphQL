@@ -72,6 +72,7 @@ class FieldOfStudy(models.Model):
 class SubjectType(models.Model):
     field_of_study = models.ForeignKey(FieldOfStudy, related_name='subject_types', on_delete=models.CASCADE)
     name = models.CharField(max_length=50)
+    points_to_give = models.PositiveSmallIntegerField()
 
     class Meta:
         db_table = 'subjects_types'
