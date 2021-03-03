@@ -50,7 +50,8 @@ class TestDeleteSchema(django.test.TestCase):
 
         self.field_of_study = FieldOfStudy.objects.create(year=self.year, name='field_of_study')
 
-        self.subject_type = SubjectType.objects.create(field_of_study=self.field_of_study, name='subject_type')
+        self.subject_type = SubjectType.objects.create(field_of_study=self.field_of_study, name='subject_type',
+                                                       points_to_give=8)
 
         self.subject1 = Subject.objects.create(subject_type=self.subject_type, description='description',
                                                lecturer='ecturer',
@@ -80,6 +81,8 @@ class TestDeleteSchema(django.test.TestCase):
         self.points = Points.objects.create(student=self.student, subject=self.subject1, points=8)
 
         self.subject_group = SubjectGroup.objects.create(student=self.student, subject=self.subject1)
+        self.subject1.occupancy+=1
+        self.subject1.save()
 
         self.application = Application.objects.create(student=self.student, unwanted_subject=self.subject1,
                                                       wanted_subject=self.subject2)

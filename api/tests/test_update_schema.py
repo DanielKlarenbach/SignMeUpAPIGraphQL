@@ -50,7 +50,8 @@ class TestUpdateSchema(django.test.TestCase):
 
         self.field_of_study = FieldOfStudy.objects.create(year=self.year, name='field_of_study')
 
-        self.subject_type = SubjectType.objects.create(field_of_study=self.field_of_study, name='subject_type')
+        self.subject_type = SubjectType.objects.create(field_of_study=self.field_of_study, name='subject_type',
+                                                       points_to_give=8)
 
         self.subject1 = Subject.objects.create(subject_type=self.subject_type, description='description',
                                                lecturer='ecturer',

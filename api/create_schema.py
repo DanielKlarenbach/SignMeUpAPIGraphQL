@@ -9,7 +9,6 @@ from api.permissions import is_logged_in, is_department_admin, is_university_adm
 from api.retrieve_schema import DepartmentNode, UniversityAdminNode, YearNode, \
     FieldOfStudyNode, \
     SubjectNode, StudentNode, SubjectGroupNode, DepartmentAdminNode, PointsNode, ApplicationNode, SubjectTypeNode
-from api.tasks import check_for_matching_application
 
 
 class CreateUniversityAdmin(graphene.Mutation):
@@ -100,18 +99,21 @@ class CreateFieldOfStudy(graphene.Mutation):
         field_of_study = FieldOfStudy.objects.create(name=name, year_id=year_id)
         return CreateFieldOfStudy(field_of_study=field_of_study)
 
+
 class CreateSubjectType(graphene.Mutation):
     subject_type = graphene.Field(SubjectTypeNode)
 
     class Arguments:
         field_of_study_id = graphene.Int(required=True, name='fieldOfStudyId')
         name = graphene.String(required=True)
+        points_to_give = graphene.Int(required=True, name='pointsToGive')
 
     @classmethod
     @is_logged_in()
     @is_objects_department_admin(model=FieldOfStudy, lookup='year__department', id_kwarg='field_of_study_id')
-    def mutate(cls, root, info,  field_of_study_id, name):
-        subject_type=SubjectType.objects.create(field_of_study_id=field_of_study_id,name=name)
+    def mutate(cls, root, info, field_of_study_id, name, points_to_give):
+        subject_type = SubjectType.objects.create(field_of_study_id=field_of_study_id, name=name,
+                                                  points_to_give=points_to_give)
         return CreateSubjectType(subject_type=subject_type)
 
 
@@ -130,7 +132,8 @@ class CreateSubject(graphene.Mutation):
 
     @classmethod
     @is_logged_in()
-    @is_objects_department_admin(model=SubjectType, lookup='field_of_study__year__department', id_kwarg='subject_type_id')
+    @is_objects_department_admin(model=SubjectType, lookup='field_of_study__year__department',
+                                 id_kwarg='subject_type_id')
     def mutate(cls, root, info, subject_type_id, description, lecturer, day, type, start_time, end_time, limit):
         subject = Subject.objects.create(subject_type_id=subject_type_id, description=description,
                                          lecturer=lecturer, day=day, type=type, start_time=start_time,
@@ -169,9 +172,13 @@ class CreateSubjectGroup(graphene.Mutation):
     @classmethod
     @is_logged_in()
     @is_objects_department_admin(model=Student, lookup='field_of_study__year__department', id_kwarg='student_id')
-    @is_objects_department_admin(model=Subject, lookup='subject_type__field_of_study__year__department', id_kwarg='subject_id')
+    @is_objects_department_admin(model=Subject, lookup='subject_type__field_of_study__year__department',
+                                 id_kwarg='subject_id')
     def mutate(cls, root, info, subject_id, student_id):
         subject_group = SubjectGroup.objects.create(subject_id=subject_id, student_id=student_id)
+        subject=Subject.objects.get(id=subject_id)
+        subject.occupancy+=1
+        subject.save()
         return CreateSubjectGroup(subject_group=subject_group)
 
 
@@ -209,7 +216,7 @@ class CreateApplication(graphene.Mutation):
         application = Application.objects.create(unwanted_subject_id=unwanted_subject_id,
                                                  wanted_subject_id=wanted_subject_id,
                                                  student_id=student_id)
-        #check_for_matching_application.delay()
+        # check_for_matching_application.delay()
         return CreateApplication(application=application)
 
 
@@ -220,7 +227,7 @@ class Mutation(graphene.ObjectType):
     create_year = CreateYear.Field()
     create_field_of_study = CreateFieldOfStudy.Field()
     create_student = CreateStudent.Field()
-    create_subject_type=CreateSubjectType.Field()
+    create_subject_type = CreateSubjectType.Field()
     create_subject = CreateSubject.Field()
     create_points = CreatePoints.Field()
     create_subject_group = CreateSubjectGroup.Field()

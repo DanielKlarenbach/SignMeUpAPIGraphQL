@@ -8,10 +8,13 @@ from api.models import Application, SubjectGroup
 @transaction.atomic
 def check_for_matching_application(application):
     print("KKKKKKKKKKKKKKKKKKKKKKKKKKKKK")
-    matching_applications=Application.objects.filter(unwanted_subject=application.wanted_subject,wanted_subject=application.unwanted_subject).order_by('created_at')
+    matching_applications = Application.objects.filter(unwanted_subject=application.wanted_subject,
+                                                       wanted_subject=application.unwanted_subject).order_by(
+        'created_at')
     if not matching_applications is None:
-            matching_application=matching_applications[0]
-            SubjectGroup.objects.get(student=application.student,subject=application.unwanted_subject).delete()
-            SubjectGroup.objects.get(student=matching_application.student,subject=matching_applications.unwanted_subject).delete()
-            SubjectGroup(student=application.student,subject=application.wanted_subject).save()
-            SubjectGroup(student=matching_application.student,subject=matching_application.wanted_subject).save()
+        matching_application = matching_applications[0]
+        SubjectGroup.objects.get(student=application.student, subject=application.unwanted_subject).delete()
+        SubjectGroup.objects.get(student=matching_application.student,
+                                 subject=matching_applications.unwanted_subject).delete()
+        SubjectGroup(student=application.student, subject=application.wanted_subject).save()
+        SubjectGroup(student=matching_application.student, subject=matching_application.wanted_subject).save()
