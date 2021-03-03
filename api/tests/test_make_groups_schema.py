@@ -60,16 +60,16 @@ class TestMakeGroupsSchema(django.test.TestCase):
                                    start_time='14:30',
                                    end_time='16:00',
                                    limit=100)
-            for j in range(4):
+            for j in range(3):
                 Subject.objects.create(subject_type=subject_type, description=f'description{j}',
                                        lecturer=f'lecturer{j}',
                                        day='MONDAY',
                                        type='P',
                                        start_time='14:30',
                                        end_time='16:00',
-                                       limit=100)
+                                       limit=15)
 
-        for i in range(30):
+        for i in range(35):
             student_user = djc_auth.get_user_model()(username=f'student{i}',
                                                      email=f'student{i}@gmail.com')
             student_user.set_password('pass')
@@ -80,7 +80,7 @@ class TestMakeGroupsSchema(django.test.TestCase):
 
             for subject_type in subjects_types:
                 students_points_to_give = subject_type.points_to_give
-                practices = Subject.objects.filter(field_of_study=self.field_of_study, type='P',
+                practices = Subject.objects.filter(type='P',
                                                    subject_type=subject_type)
                 for (j, subject) in enumerate(practices):
                     if students_points_to_give == 0:
@@ -103,7 +103,7 @@ class TestMakeGroupsSchema(django.test.TestCase):
             }
         '''
         input = {
-            'fieldOfStudyId': self.field_of_study,
+            'fieldOfStudyId': self.field_of_study.id,
         }
         context_value = RequestFactory().get('/api/')
         context_value.user = self.department_admin_user
@@ -114,10 +114,11 @@ class TestMakeGroupsSchema(django.test.TestCase):
             context_value=context_value
         )
 
-        for (i,student) in enumerate(Student.objects.filter(field_of_study=self.field_of_study)):
-            for (j,subject_type) in enumerate(SubjectType.objects.filter(field_of_study=self.field_of_study)):
-                with self.subTest(n=i+j):
-                    self.assertEqual(len(SubjectGroup.objects.filter(student=student,subject__subject_type=subject_type)),1)
+        for (i, student) in enumerate(Student.objects.filter(field_of_study=self.field_of_study)):
+            for (j, subject_type) in enumerate(SubjectType.objects.filter(field_of_study=self.field_of_study)):
+                with self.subTest(n=i + j):
+                    self.assertEqual(
+                        len(SubjectGroup.objects.filter(student=student, subject__subject_type=subject_type)), 1)
 
         ok = response.get("data").get("makeGroups").get("ok")
         self.assertTrue(ok)

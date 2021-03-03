@@ -123,6 +123,9 @@ class DeleteSubjectGroup(graphene.Mutation):
     def mutate(cls, root, info, id):
         subject_group = SubjectGroup.objects.get(id=id)
         subject_group.delete()
+        subject=Subject.objects.get(id=subject_group.subject.id)
+        subject.occupancy-=1
+        subject.save()
         return DeleteSubjectGroup(subject_group=subject_group)
 
 

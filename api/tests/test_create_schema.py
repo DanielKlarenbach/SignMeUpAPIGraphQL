@@ -50,7 +50,8 @@ class TestCreateSchema(django.test.TestCase):
 
         self.field_of_study = FieldOfStudy.objects.create(year=self.year, name='field_of_study')
 
-        self.subject_type = SubjectType.objects.create(field_of_study=self.field_of_study, name='subject_type')
+        self.subject_type = SubjectType.objects.create(field_of_study=self.field_of_study, name='subject_type',
+                                                       points_to_give=8)
 
         self.subject1 = Subject.objects.create(subject_type=self.subject_type, description='description',
                                                lecturer='ecturer',
@@ -220,8 +221,8 @@ class TestCreateSchema(django.test.TestCase):
 
     def test_create_subject_type(self):
         mutation = '''
-            mutation CreateSubjectType($fieldOfStudyId: Int!,$name : String!){
-                createSubjectType(fieldOfStudyId: $fieldOfStudyId,name : $name){
+            mutation CreateSubjectType($fieldOfStudyId: Int!,$name : String! $pointsToGive : Int!){
+                createSubjectType(fieldOfStudyId: $fieldOfStudyId,name : $name, pointsToGive : $pointsToGive){
                     subjectType{
                         name
                     }
@@ -230,7 +231,8 @@ class TestCreateSchema(django.test.TestCase):
         '''
         input = {
             'fieldOfStudyId': self.field_of_study.id,
-            'name': 'test_subject_type'
+            'name': 'test_subject_type',
+            'pointsToGive': 8
         }
 
         context_value = RequestFactory().get('/api/')
