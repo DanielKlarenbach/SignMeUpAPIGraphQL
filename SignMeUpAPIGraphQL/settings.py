@@ -148,3 +148,5 @@ CORS_ALLOWED_ORIGINS = [
 'http://192.168.1.11:4200',
 'http://localhost:4200'
 ]
+
+TEST_RUNNER = "django_nose.NoseTestSuiteRunner"
