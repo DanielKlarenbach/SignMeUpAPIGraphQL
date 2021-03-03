@@ -4,7 +4,7 @@ import random
 from django.test import RequestFactory
 
 from api.models import UniversityAdmin, University, Department, DepartmentAdmin, Year, FieldOfStudy, SubjectType, \
-    Subject, Student, Points
+    Subject, Student, Points, SubjectGroup
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'SignMeUpAPIGraphQL.settings')
 import django
@@ -113,3 +113,11 @@ class TestMakeGroupsSchema(django.test.TestCase):
             headers=self.department_admin_headers,
             context_value=context_value
         )
+
+        for (i,student) in enumerate(Student.objects.filter(field_of_study=self.field_of_study)):
+            for (j,subject_type) in enumerate(SubjectType.objects.filter(field_of_study=self.field_of_study)):
+                with self.subTest(n=i+j):
+                    self.assertEqual(len(SubjectGroup.objects.filter(student=student,subject__subject_type=subject_type)),1)
+
+        ok = response.get("data").get("makeGroups").get("ok")
+        self.assertTrue(ok)
