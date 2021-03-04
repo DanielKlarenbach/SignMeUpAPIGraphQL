@@ -142,6 +142,6 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
 ]
 
-CELERY_BROKER_URL='pyamqp://guest@localhost//'
+CELERY_BROKER_URL='redis://localhost:6379/0'
 
 TEST_RUNNER = "django_nose.NoseTestSuiteRunner"
