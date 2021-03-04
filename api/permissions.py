@@ -97,6 +97,7 @@ def is_owner(model, lookup='user', id_kwarg='id', info_index=2):
             try:
                 obj = model.objects.get(**{lookup: user}, id=kwargs[id_kwarg])
             except model.DoesNotExist:
+                print(id_kwarg)
                 raise Exception('You are not objects owner, so you are not authorized to perform this action')
             return func(*args, **kwargs)
 
