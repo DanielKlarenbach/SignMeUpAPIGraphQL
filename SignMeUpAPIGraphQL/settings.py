@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 import os
+import sys
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -80,17 +81,34 @@ WSGI_APPLICATION = 'SignMeUpAPIGraphQL.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'd63lb34s0lfe8u',
-        'USER': 'untwamayilynfg',
-        'PASSWORD': '6d9cdfdbc1296bb8488e8294e4c86288ed61b0c65bb897e7dcb49224c403499a',
-        'HOST': 'ec2-174-129-199-54.compute-1.amazonaws.com',
-        'PORT': '5432',
-    }
-}
 
+if 'test' in sys.argv:
+    #Configuration for test database
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': 'dfk3ckjvdr0a3h',
+            'USER': 'yspsbewtdeqhng',
+            'PASSWORD': 'cbed31505efa6aff6c9ad0dabb9e0da52842d794d822bd91718b2dc0a47605d2',
+            'HOST': 'ec2-54-211-77-238.compute-1.amazonaws.com',
+            'PORT': 5432,
+            'TEST': {
+                'NAME': 'dfk3ckjvdr0a3h',
+            }
+        }
+    }
+else:
+  #Default configuration
+  DATABASES = {
+      'default': {
+          'ENGINE': 'django.db.backends.postgresql',
+          'NAME': 'd63lb34s0lfe8u',
+          'USER': 'untwamayilynfg',
+          'PASSWORD': '6d9cdfdbc1296bb8488e8294e4c86288ed61b0c65bb897e7dcb49224c403499a',
+          'HOST': 'ec2-174-129-199-54.compute-1.amazonaws.com',
+          'PORT': '5432',
+      }
+  }
 
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
