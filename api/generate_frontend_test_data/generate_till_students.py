@@ -20,7 +20,7 @@ def generate_time():
 
 
 def generate_day():
-    days = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY']
+    days = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY']
     return random.choice(days)
 
 
@@ -77,7 +77,7 @@ if __name__ == '__main__':
                     Subject.objects.create(subject_type=subject_type,
                                            description=f'description{subject_type_num}',
                                            lecturer=f'lecturer{random.randint(0, 10)}',
-                                           day='MONDAY',
+                                           day=generate_day(),
                                            type='L',
                                            start_time=generate_time(),
                                            end_time=generate_time(),
@@ -86,8 +86,8 @@ if __name__ == '__main__':
                     for practice_num in range(8):
                         Subject.objects.create(subject_type=subject_type,
                                                description=f'description{subject_type_num}',
-                                               lecturer=f'lecturer{{random.randint(0, 10)}}',
-                                               day='MONDAY',
+                                               lecturer=f'lecturer{random.randint(0, 10)}',
+                                               day=generate_day(),
                                                type='P',
                                                start_time=generate_time(),
                                                end_time=generate_time(),
