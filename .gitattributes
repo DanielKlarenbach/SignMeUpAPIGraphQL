@@ -1,3 +1,0 @@
-Procfile merge=ours
-.gitignore merge=ours
-SignMeUpAPIGraphQL/settings.py merge=ours
