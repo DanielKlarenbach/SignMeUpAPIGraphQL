@@ -93,7 +93,7 @@ if __name__ == '__main__':
                                                end_time=generate_time(),
                                                limit=15)
 
-                for student_num in range(100):
+                for student_num in range(50):
                     logging.info(f'Generating student {student_num}')
                     student_user = djc_auth.get_user_model()(
                         username=f'student{department_num}{start_year}{field_of_study_num}{student_num}',
